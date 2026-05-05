@@ -1171,7 +1171,7 @@ void Player::handle_input(double ms_from_start, double current_ms, std::optional
 
         while (input.check_func(player_num)) {
             spawn_hit_effects(input.drum_type, input.side);
-            if (global_data.hit_sound[(int)global_data.player_num] != -1)
+            if (global_data.hit_sound[(int)player_num] != -1)
                 audio->play_sound(input.sound, "hitsound");
             check_note(ms_from_start, input.drum_type, current_ms, background);
         }

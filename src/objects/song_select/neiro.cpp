@@ -35,7 +35,7 @@ NeiroSelector::NeiroSelector(PlayerNum player_num) : player_num(player_num) {
 }
 
 void NeiroSelector::load_sound() {
-    if (selected_sound == (int)sounds.size()) return;
+    if (selected_sound == (int)sounds.size() - 1) return;
     std::filesystem::path base = std::filesystem::path("Skins")
         / global_data.config->paths.skin
         / "Sounds" / "hit_sounds" / std::to_string(selected_sound);
@@ -58,7 +58,7 @@ void NeiroSelector::left() {
     text_2 = std::make_unique<OutlinedText>(sounds[selected_sound], tex.skin_config[SC::NEIRO_TEXT].font_size, ray::WHITE, ray::BLACK, false);
 
     direction = -1;
-    if (selected_sound == (int)sounds.size()) return;
+    if (selected_sound == (int)sounds.size() - 1) return;
     audio->play_sound(curr_sound, "hitsound");
 }
 
@@ -74,13 +74,13 @@ void NeiroSelector::right() {
     text_2 = std::make_unique<OutlinedText>(sounds[selected_sound], tex.skin_config[SC::NEIRO_TEXT].font_size, ray::WHITE, ray::BLACK, false);
 
     direction = 1;
-    if (selected_sound == (int)sounds.size()) return;
+    if (selected_sound == (int)sounds.size() - 1) return;
     audio->play_sound(curr_sound, "hitsound");
 }
 
 void NeiroSelector::confirm() {
     if (move->is_started && !move->is_finished) return;
-    if (selected_sound == (int)sounds.size()) {
+    if (selected_sound == (int)sounds.size() - 1) {
         global_data.hit_sound[(int)player_num] = -1;
     } else {
         global_data.hit_sound[(int)player_num] = selected_sound;

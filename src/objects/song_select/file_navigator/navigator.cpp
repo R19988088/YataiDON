@@ -315,7 +315,11 @@ void Navigator::load_current_directory_async(const fs::path path) {
                 }
                 if (has_def_file(curr_path)) {
                     BoxDef entry_box_def = parse_box_def(curr_path);
-                    enqueue_box(std::make_unique<FolderBox>(curr_path, entry_box_def, get_tja_count(curr_path), song_files));
+                    int tja_count = get_tja_count(curr_path);
+                    if (entry_box_def.collection == "RECOMMENDED") {
+                        tja_count = 10;
+                    }
+                    enqueue_box(std::make_unique<FolderBox>(curr_path, entry_box_def, tja_count, song_files));
                 } else if (is_osu_song_folder(curr_path)) {
                     BoxDef osu_box_def = box_def;
                     auto it = fs::directory_iterator(curr_path);

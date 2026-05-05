@@ -134,8 +134,9 @@ void DanResultScreen::draw_page1() {
 
         std::string lv = std::to_string(song.diff_level);
         float dm = tex.skin_config[SC::DAN_RESULT_DIFF_NUM_MARGIN].x;
+        int last = (int)lv.size() - 1;
         for (int j = 0; j < (int)lv.size(); j++)
-            tex.draw_texture(RESULT_INFO::DIFF_NUM, {.frame=lv[j]-'0', .x=-(float)(j*dm), .y=y});
+            tex.draw_texture(RESULT_INFO::DIFF_NUM, {.frame=lv[j]-'0', .x=-(float)((last-j)*dm), .y=y});
 
         auto draw_stat = [&](TexID icon, int val, int idx) {
             tex.draw_texture(icon, {.y=y});
