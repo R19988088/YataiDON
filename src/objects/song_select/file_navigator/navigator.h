@@ -45,6 +45,7 @@ private:
     MoveAnimation* background_move;
 
     std::thread              loader_thread;
+    std::thread              song_files_thread;
     std::mutex               pending_mutex;
     std::queue<std::unique_ptr<BaseBox>> pending_boxes;
     std::queue<std::unique_ptr<BaseBox>> pending_inline_boxes;
@@ -69,6 +70,7 @@ private:
     void setup_back_box(const fs::path& path, bool has_children);
     bool has_child_folders(const fs::path& path);
 
+    void wait_for_song_files();
     void enqueue_box(std::unique_ptr<BaseBox> box);
     void enqueue_inline_box(std::unique_ptr<BaseBox> box);
     void parse_song_list(const fs::path& path, BoxDef box_def, bool inline_mode);

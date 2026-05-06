@@ -28,6 +28,7 @@ protected:
     std::unique_ptr<Timer> diff_select_timer;
     std::unique_ptr<Indicator> indicator;
     Statistics cached_stats;
+    std::future<Statistics> stats_future;
 
     ray::Shader shader;
     ray::Color color;

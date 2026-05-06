@@ -24,7 +24,9 @@ void SongSelectScreen::on_screen_start() {
     dan_transition.reset();
 
     navigator.init(global_data.config->paths.tja_path);
-    cached_stats = navigator.get_statistics(global_data.config->paths.tja_path[0]);
+    stats_future = std::async(std::launch::async, [this]() {
+        return navigator.get_statistics(global_data.config->paths.tja_path[0]);
+    });
     navigator.refresh_scores();
 
     player = std::make_unique<SongSelectPlayer>(global_data.player_num);
@@ -114,6 +116,10 @@ std::optional<Screens> SongSelectScreen::update() {
     if (search_box) search_box->update(current_time);
 
     if (navigator.diff_sort_ready() && !diff_sort_selector) {
+        if (stats_future.valid()) {
+            stats_future.wait();
+            cached_stats = stats_future.get();
+        }
         diff_sort_selector.emplace(cached_stats, last_diff_sort.first, last_diff_sort.second);
     }
     if (diff_sort_selector) {

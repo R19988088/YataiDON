@@ -16,32 +16,45 @@ Navigator::Navigator() {
 
 Navigator::~Navigator() {
     join_loader();
+    if (song_files_thread.joinable())
+        song_files_thread.join();
+}
+
+void Navigator::wait_for_song_files() {
+    if (song_files_thread.joinable())
+        song_files_thread.join();
 }
 
 void Navigator::init(std::vector<fs::path> songs_paths) {
     if (!is_init) {
         root_paths = songs_paths;
         open_index = 0;
-        for (fs::path& root_path : songs_paths) {
-            try {
-                std::error_code ec;
-                auto it = fs::recursive_directory_iterator(root_path, fs::directory_options::skip_permission_denied, ec);
-                while (it != fs::end(it)) {
-                    try {
-                        if (is_song_file(it->path())) {
-                            SongParser parsed_entry = SongParser(it->path());
-                            parsed_entry.get_metadata();
-                            song_files[{parsed_entry.metadata.title["en"], parsed_entry.metadata.subtitle["en"]}] = it->path();
+
+        song_files_thread = std::thread([this, songs_paths]() {
+            for (const fs::path& root_path : songs_paths) {
+                try {
+                    std::error_code ec;
+                    auto it = fs::recursive_directory_iterator(root_path, fs::directory_options::skip_permission_denied, ec);
+                    while (it != fs::end(it)) {
+                        try {
+                            if (is_song_file(it->path())) {
+                                SongParser parsed_entry = SongParser(it->path());
+                                parsed_entry.get_metadata();
+                                song_files[{parsed_entry.metadata.title["en"], parsed_entry.metadata.subtitle["en"]}] = it->path();
+                            }
+                        } catch (const std::exception& inner) {
+                            spdlog::warn("Skipping song during scan: {}", inner.what());
                         }
-                    } catch (const std::exception& inner) {
-                        spdlog::warn("Skipping song during scan: {}", inner.what());
+                        it.increment(ec);
+                        if (ec) { spdlog::warn("Skipping entry: {}", ec.message()); ec.clear(); }
                     }
-                    it.increment(ec);
-                    if (ec) { spdlog::warn("Skipping entry: {}", ec.message()); ec.clear(); }
+                } catch (const fs::filesystem_error& e) {
+                    spdlog::error("Error scanning song directory: {}", e.what());
                 }
-            } catch (const fs::filesystem_error& e) {
-                spdlog::error("Error scanning song directory: {}", e.what());
             }
+        });
+
+        for (const fs::path& root_path : songs_paths) {
             for (const auto& entry : fs::directory_iterator(root_path)) {
                 if (!fs::is_directory(entry) || !has_def_file(entry.path())) continue;
                 BoxDef bd = parse_box_def(entry.path());
@@ -294,6 +307,7 @@ void Navigator::parse_song_list(const fs::path& path, BoxDef box_def, bool inlin
 }
 
 void Navigator::load_current_directory_async(const fs::path path) {
+    wait_for_song_files();
     BoxDef box_def = parse_box_def(path);
 
     setup_back_box(path, true);
@@ -674,6 +688,7 @@ void Navigator::load_collection_search(const fs::path& path, const BoxDef& box_d
 }
 
 void Navigator::load_songs_inline_async(const fs::path path, BoxDef box_def) {
+    wait_for_song_files();
     int songs_added = 0;
 
     auto add_song = [&](const fs::path& song_path) {

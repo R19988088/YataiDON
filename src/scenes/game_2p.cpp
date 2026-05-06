@@ -1,5 +1,4 @@
 #include "game_2p.h"
-#include "../libs/scores.h"
 
 void Game2PScreen::on_screen_start() {
     GameScreen::on_screen_start();
