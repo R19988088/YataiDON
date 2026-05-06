@@ -7,7 +7,7 @@
 #include "libs/logging.h"
 #include "libs/screen.h"
 #include "libs/script.h"
-#include "libs/parsers/song_parser.h"
+#include "libs/song_parser.h"
 
 #include "scenes/dan_result.h"
 #include "scenes/dan_select.h"

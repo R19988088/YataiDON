@@ -1,5 +1,5 @@
 #include "scores.h"
-#include "parsers/song_parser.h"
+#include "song_parser.h"
 #include <numeric>
 
 ScoresManager::ScoresManager(const fs::path& db_path) {

@@ -1,5 +1,5 @@
 #include "box_dan.h"
-#include "../../../libs/parsers/song_parser.h"
+#include "../../../libs/song_parser.h"
 
 DanBox::DanBox(const fs::path& path, const std::string& title, int color,
                const std::vector<DanSongEntry>& songs_in,

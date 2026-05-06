@@ -1,8 +1,8 @@
 #pragma once
 
 #include <variant>
-#include "osu.h"
-#include "tja.h"
+#include "parsers/osu.h"
+#include "parsers/tja.h"
 
 // Exposes the same public interface as TJAParser so existing code
 // can be updated by substituting SongParser for TJAParser.

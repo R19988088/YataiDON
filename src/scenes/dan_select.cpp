@@ -1,5 +1,5 @@
 #include "dan_select.h"
-#include "../libs/parsers/song_parser.h"
+#include "../libs/song_parser.h"
 #include "../libs/input.h"
 #include "../objects/song_select/file_navigator/navigator.h"
 #include <rapidjson/istreamwrapper.h>

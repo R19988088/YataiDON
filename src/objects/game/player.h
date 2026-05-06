@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../libs/parsers/song_parser.h"
+#include "../../libs/song_parser.h"
 #include "../global/nameplate.h"
 #include "background.h"
 #include "balloon_counter.h"

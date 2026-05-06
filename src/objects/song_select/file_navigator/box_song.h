@@ -2,7 +2,7 @@
 
 #include "box_base.h"
 #include "score_history.h"
-#include "../../../libs/parsers/song_parser.h"
+#include "../../../libs/song_parser.h"
 
 class SongBox : public BaseBox {
 public:
