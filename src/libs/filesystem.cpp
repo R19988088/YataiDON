@@ -216,3 +216,41 @@ rapidjson::Document read_json_file(fs::path file_path) {
 
     return doc;
 }
+
+std::vector<SongListEntry> read_song_list(const fs::path& path) {
+    std::vector<SongListEntry> entries;
+    std::ifstream file(path);
+    if (!file) return entries;
+
+    std::string line;
+    while (std::getline(file, line)) {
+        if (!line.empty() && line.back() == '\r')
+            line.pop_back();
+
+        std::vector<std::string> fields;
+        std::stringstream ss(line);
+        std::string field;
+        while (std::getline(ss, field, '|'))
+            fields.push_back(field);
+        if (!line.empty() && line.back() == '|')
+            fields.push_back("");
+
+        if (fields.size() < 3) continue;
+
+        std::string hash = fields[0];
+        if (hash.size() >= 3 &&
+            (unsigned char)hash[0] == 0xEF &&
+            (unsigned char)hash[1] == 0xBB &&
+            (unsigned char)hash[2] == 0xBF)
+            hash = hash.substr(3);
+
+        entries.push_back({std::move(hash), std::move(fields[1]), std::move(fields[2])});
+    }
+    return entries;
+}
+
+void write_song_list(const fs::path& path, const std::vector<SongListEntry>& entries) {
+    std::ofstream out(path, std::ios::trunc);
+    for (const auto& e : entries)
+        out << e.hash << "|" << e.title << "|" << e.subtitle << "\n";
+}

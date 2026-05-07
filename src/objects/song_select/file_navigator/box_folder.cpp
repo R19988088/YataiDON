@@ -1,4 +1,5 @@
 #include "box_folder.h"
+#include "../../../libs/filesystem.h"
 #include "../../../libs/scores.h"
 #include "../../../libs/audio_engine.h"
 
@@ -37,25 +38,9 @@ void FolderBox::refresh_scores(std::map<std::pair<std::string, std::string>, fs:
 
     for (const auto& entry : fs::recursive_directory_iterator(path)) {
         if (entry.path().filename() == "song_list.txt") {
-            std::ifstream file(entry.path());
-            std::string line;
-            while (std::getline(file, line)) {
-                if (!line.empty() && line.back() == '\r') line.pop_back();
-                std::vector<std::string> fields;
-                std::stringstream ss(line);
-                std::string field;
-                while (std::getline(ss, field, '|')) fields.push_back(field);
-                if (!line.empty() && line.back() == '|')
-                    fields.push_back("");
-                if (fields.size() < 3) continue;
-                std::string hash = fields[0];
-                if (hash.size() >= 3 && (unsigned char)hash[0] == 0xEF &&
-                    (unsigned char)hash[1] == 0xBB && (unsigned char)hash[2] == 0xBF)
-                    hash = hash.substr(3);
-                if (auto found = scores_manager.get_path_by_hash(hash)) {
+            for (const auto& e : read_song_list(entry.path()))
+                if (auto found = scores_manager.get_path_by_hash(e.hash))
                     update_crown(*found);
-                }
-            }
         }
         auto ext = entry.path().extension();
         if (ext == ".tja" || ext == ".osu")

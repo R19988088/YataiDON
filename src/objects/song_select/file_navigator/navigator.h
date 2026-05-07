@@ -1,7 +1,7 @@
 #pragma once
 
+#include "box_song.h"
 #include "genre_bg.h"
-#include "box_song_osu.h"
 #include <queue>
 
 struct CourseStats {
@@ -60,6 +60,7 @@ private:
     std::optional<std::pair<int,int>> diff_sort_filter;
     std::optional<std::pair<int,int>> last_diff_sort_result;
 
+    void navigate(int delta, bool snap);
     void set_positions(bool init, float duration);
     bool is_song_file(const fs::path& path);
     bool is_osu_song_folder(const fs::path& path);
@@ -76,9 +77,8 @@ private:
     void parse_song_list(const fs::path& path, BoxDef box_def, bool inline_mode);
     void load_current_directory_async(const fs::path path);
     void load_collection_difficulty(const fs::path& path, const BoxDef& box_def, int course, int level);
-    void load_collection_favorite(const fs::path& path, const BoxDef& box_def);
+    void load_from_song_list(const fs::path& path, const BoxDef& box_def, bool mark_favorite);
     void load_collection_new(const fs::path& path, const BoxDef& box_def);
-    void load_collection_recent(const fs::path& path, const BoxDef& box_def);
     void load_collection_recommended(const fs::path& path, const BoxDef& box_def);
     void load_collection_search(const fs::path& path, const BoxDef& box_def);
     void load_songs_inline_async(const fs::path path, BoxDef box_def);
