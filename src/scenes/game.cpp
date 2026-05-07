@@ -120,7 +120,7 @@ void GameScreen::init_tja(fs::path song) {
     }
 
     players.push_back(std::make_unique<Player>(parser, global_data.player_num, global_data.session_data[(int)global_data.player_num].selected_difficulty, false, global_data.modifiers[(int)global_data.player_num]));
-    start_ms = get_current_ms() - parser->metadata.offset*1000;
+    start_ms = get_current_ms() - parser->metadata.offset*1000 - (double)global_data.config->general.audio_offset;
 }
 
 void GameScreen::start_song(double ms_from_start) {
@@ -238,11 +238,14 @@ void GameScreen::resync_song(double current_ms) {
     double audio_ms = audio.get_sound_time_played(song_music.value()) * 1000.0f;
     double audio_ms_adjusted = audio_ms + (parser->metadata.offset * 1000 + start_delay - (double)global_data.config->general.audio_offset);
 
-    if (std::abs(ms_from_start - audio_ms_adjusted) > Timing::GOOD) {
-        spdlog::debug("Resyncing chart from {} to {}", ms_from_start, audio_ms_adjusted);
+    double drift = audio_ms_adjusted - ms_from_start;
+    if (std::abs(drift) > 100.0) {
+        spdlog::debug("Hard resyncing chart from {} to {}", ms_from_start, audio_ms_adjusted);
         ms_from_start = audio_ms_adjusted;
-        start_ms = current_ms - ms_from_start;
+    } else if (std::abs(drift) > 5.0) {
+        ms_from_start += drift * 0.5;
     }
+    start_ms = current_ms - ms_from_start;
 }
 
 void GameScreen::end_song() {
@@ -274,8 +277,6 @@ std::optional<Screens> GameScreen::update() {
     if (transition->is_finished()) {
         start_song(ms_from_start);
         global_data.input_locked = 0;
-    } else {
-        start_ms = current_ms - parser->metadata.offset*1000;
     }
     resync_song(current_ms);
     update_background(current_ms);
