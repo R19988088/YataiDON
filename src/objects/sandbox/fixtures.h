@@ -222,14 +222,13 @@ struct ScoreCounterFixture : public SandboxScreen::Fixture {
     void reset(double ms) override {
         score = 0;
         counter.emplace(0, false);
-        counter->update(ms, score);
     }
     void on_space(double ms) override {
         score += 1000;
-        if (counter) counter->update(ms, score);
+        if (counter) counter->update_count(score);
     }
 
-    void update(double ms) override { if (counter) counter->update(ms, score); }
+    void update(double ms) override { if (counter) counter->update(ms); }
     void draw()            override { if (counter) counter->draw(0); }
 
     std::vector<std::string> debug_lines() override {

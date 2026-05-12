@@ -22,6 +22,7 @@ def generate(json_path: str, output_path: str) -> None:
         data = json.load(f)
 
     keys = list(data.keys())
+    option_keys = list(data.get("screen", {}).get("options", {}).keys())
 
     lines = [
         "// AUTO-GENERATED — do not edit by hand.",
@@ -57,6 +58,32 @@ def generate(json_path: str, output_path: str) -> None:
     lines += [
         "};",
         "",
+        "enum class SCO : unsigned int {",
+    ]
+
+    for key in option_keys:
+        lines.append(f"    {key_to_enum(key)},")
+
+    lines += [
+        "};",
+        "",
+        "namespace std {",
+        "    template<> struct hash<SCO> {",
+        "        size_t operator()(SCO v) const noexcept {",
+        "            return hash<unsigned int>{}(static_cast<unsigned int>(v));",
+        "        }",
+        "    };",
+        "}",
+        "",
+        "const std::unordered_map<std::string, SCO> screen_options_map {",
+    ]
+
+    for key in option_keys:
+        lines.append(f'    {{"{key}", SCO::{key_to_enum(key)}}},')
+
+    lines += [
+        "};",
+        "",
     ]
 
     content = "\n".join(lines)
@@ -65,7 +92,7 @@ def generate(json_path: str, output_path: str) -> None:
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(content)
 
-    print(f"Generated {output_path} ({len(keys)} entries)")
+    print(f"Generated {output_path} ({len(keys)} SC entries, {len(option_keys)} SCO entries)")
 
 
 if __name__ == "__main__":

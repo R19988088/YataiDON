@@ -12,8 +12,7 @@ void ScoreCounter::update_count(int score) {
     }
 }
 
-void ScoreCounter::update(double current_ms, int score) {
-    update_count(score);
+void ScoreCounter::update(double current_ms) {
     if (score > 0) {
         stretch->update(current_ms);
     }

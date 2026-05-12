@@ -335,11 +335,16 @@ void Player::update(double ms_from_start, double current_ms, std::optional<Backg
         it->update(current_ms);
         if (it->is_finished()) {
             it = base_score_list.erase(it);
+            if (tex.options[SCO::DELAY_SCORE_ADDITION])
+                score_counter.update_count(score);
         } else {
             ++it;
         }
     }
-    score_counter.update(current_ms, score);
+    if (!tex.options[SCO::DELAY_SCORE_ADDITION]) {
+        score_counter.update_count(score);
+    }
+    score_counter.update(current_ms);
     autoplay_manager(ms_from_start, current_ms, background);
     handle_input(ms_from_start, current_ms, background);
     nameplate.update(current_ms);

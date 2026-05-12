@@ -36,6 +36,20 @@ void TextureWrapper::init(const fs::path& skin_path) {
     screen_height = static_cast<int>(skin_config[SC::SCREEN].height);
     screen_scale = screen_width / 1280.0f;
 
+    if (skin_config_file.HasMember("screen") && skin_config_file["screen"].HasMember("options")) {
+        const Value& opts = skin_config_file["screen"]["options"];
+        if (opts.IsObject()) {
+            for (auto& opt : opts.GetObject()) {
+                if (opt.value.IsBool()) {
+                    auto it = screen_options_map.find(opt.name.GetString());
+                    if (it != screen_options_map.end()) {
+                        options[it->second] = opt.value.GetBool();
+                    }
+                }
+            }
+        }
+    }
+
     if (skin_config_file.HasMember("screen") && skin_config_file["screen"].HasMember("parent")) {
         std::string parent = skin_config_file["screen"]["parent"].GetString();
         parent_graphics_path = fs::path("Skins") / parent / "Graphics";

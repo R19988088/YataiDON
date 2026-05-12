@@ -97,6 +97,7 @@ private:
 public:
     std::unordered_map<uint32_t, std::shared_ptr<TextureObject>> textures;
     std::unordered_map<SC, SkinInfo> skin_config;
+    std::unordered_map<SCO, bool> options;
     fs::path font_path;
     int screen_width;
     int screen_height;

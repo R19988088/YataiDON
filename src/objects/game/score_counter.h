@@ -8,11 +8,10 @@ private:
     bool is_2p;
     TextStretchAnimation* stretch;
 
-    void update_count(int score);
-
 public:
     ScoreCounter(int score, bool is_2p);
-    void update(double current_ms, int score);
+    void update_count(int score);
+    void update(double current_ms);
     void draw(float y);
 
 };
