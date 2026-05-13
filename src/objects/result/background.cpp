@@ -32,5 +32,5 @@ void ResultBackground::draw() {
             x += (float)tex.screen_width / 5;
         }
     }
-    tex.draw_texture(BACKGROUND::RESULT_TEXT);
+    tex.draw_texture(tex.get_enum("background/result_text_" + global_data.config->general.language));
 }

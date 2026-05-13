@@ -15,7 +15,7 @@ void ResultScreen::on_screen_start() {
         background.emplace(global_data.player_num, tex.screen_width);
     }
     player_1.emplace(global_data.player_num, false, false);
-    song_num = std::make_unique<SongNum>(global_data.songs_played+1);
+    song_num = std::make_unique<SongNum>(global_data.songs_played);
 }
 
 Screens ResultScreen::on_screen_end(Screens next_screen) {
@@ -53,7 +53,8 @@ std::optional<Screens> ResultScreen::update() {
         fade_out->update(current_time);
         if (fade_out->is_finished) {
             fade_out->update(current_time);
-            if (global_data.config->general.song_limit > 0 && global_data.config->general.song_limit == global_data.songs_played + 1) {
+            if (global_data.config->general.song_limit > 0 && global_data.config->general.song_limit == global_data.songs_played) {
+                global_data.songs_played = 0;
                 return on_screen_end(Screens::GAME_OVER);
             }
             return on_screen_end(Screens::SONG_SELECT);

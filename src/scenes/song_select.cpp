@@ -192,11 +192,12 @@ void SongSelectScreen::draw_overlays() {
 }
 
 void SongSelectScreen::draw() {
+    navigator.draw_background();
     player->draw_background_diffs(state);
-    if (screen_init) navigator.draw(player->is_ura);
+    navigator.draw(player->is_ura);
     script->draw_footer();
 
-    player->draw(state);
+    player->draw(state, false, navigator.get_diff_fade_in());
 
     draw_overlays();
 

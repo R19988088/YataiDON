@@ -88,16 +88,30 @@ void Navigator::init(std::vector<fs::path> songs_paths) {
         }
         is_init = true;
     } else {
-        for (auto& item : items) {
-            item->reset();
-            item->fade_in(0);
+        if (global_data.config->general.song_limit > 0) {
+            join_loader();
+            is_inline = false;
+            inline_state.reset();
+            pending_inline_path.reset();
+            pending_inline_folder = nullptr;
+            genre_bg.reset();
+            awaiting_diff_sort = false;
+            diff_sort_filter.reset();
+            for (const fs::path& root_path : root_paths) {
+                load_current_directory(root_path);
+            }
+        } else {
+            for (auto& item : items) {
+                item->reset();
+                item->fade_in(0);
+            }
+            if (pending_inline_folder != nullptr) {
+                pending_inline_folder->reset();
+                pending_inline_folder->expand_box();
+            }
+            set_positions(false, 0);
+            get_current_item()->expand_box();
         }
-        if (pending_inline_folder != nullptr) {
-            pending_inline_folder->reset();
-            pending_inline_folder->expand_box();
-        }
-        set_positions(false, 0);
-        get_current_item()->expand_box();
     }
     background_move = (MoveAnimation*)tex.get_animation(0);
     background_fade_change = (FadeAnimation*)tex.get_animation(5);
@@ -800,6 +814,7 @@ void Navigator::load_current_directory(const fs::path path) {
         return;
     }
 
+    open_index = 0;
     setup_back_box(path, true);
     is_processing = true;
     loading_complete = false;
@@ -1009,14 +1024,22 @@ void Navigator::update(double current_ms) {
     }
 }
 
-void Navigator::draw(bool is_ura) {
+float Navigator::get_diff_fade_in() {
+    SongBox* current_item = dynamic_cast<SongBox*>(get_current_item());
+    if (!current_item || !current_item->diff_fade_in) return 0.0f;
+    return current_item->diff_fade_in->attribute;
+}
+
+void Navigator::draw_background() {
     int width = tex.textures[BOX::BACKGROUND]->width;
 
     for (int i = 0; i < width * 4; i += width) {
         tex.draw_texture(BOX::BACKGROUND, {.frame=(int)last_bg_genre_index, .x=(float)(i - background_move->attribute)});
         tex.draw_texture(BOX::BACKGROUND, {.frame=(int)bg_genre_index,  .x=(float)(i - background_move->attribute), .fade=1.0f - background_fade_change->attribute});
     }
+}
 
+void Navigator::draw(bool is_ura) {
     if (genre_bg.has_value()) {
         float start_pos;
         float end_pos;

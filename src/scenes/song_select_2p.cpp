@@ -134,8 +134,8 @@ void SongSelect2PScreen::draw() {
     script->draw_footer();
 
     bool same_diff = (player->selected_difficulty == player_2->selected_difficulty);
-    player->draw(state, same_diff);
-    player_2->draw(state, same_diff);
+    player->draw(state, same_diff, navigator.get_diff_fade_in());
+    player_2->draw(state, same_diff, navigator.get_diff_fade_in());
 
     draw_overlays();
 

@@ -18,6 +18,7 @@ public:
     bool music_playing = false;
     std::unique_ptr<ScoreHistory> score_history;
     double box_opened_at = 0.0;
+    FadeAnimation* diff_fade_in;
 
     SongBox(const fs::path& path, const BoxDef& box_def, SongParser parser);
 
@@ -34,7 +35,6 @@ public:
     void refresh_scores();
 
 protected:
-    FadeAnimation* diff_fade_in;
     void draw_closed() override;
     void draw_open() override;
     void draw_diff_select(bool is_ura) override;

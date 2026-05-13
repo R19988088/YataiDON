@@ -48,11 +48,12 @@ public:
     std::optional<std::pair<int,int>> handle_input_diff_sort(DiffSortSelect* diff_sort_selector);
     std::optional<std::string> handle_input_search();
 
-    void draw_selector(bool is_half);
+    void draw_selector(bool is_half, float fade_in);
     void draw_background_diffs(SongSelectState state);
-    void draw(SongSelectState state, bool is_half = false);
+    void draw(SongSelectState state, bool is_half, float diff_fade_in);
 
 private:
+    bool voice_played;
     void navigate_difficulty_left();
     void navigate_difficulty_right();
     void toggle_ura_mode();

@@ -107,6 +107,7 @@ public:
     void load_current_directory(const fs::path path);
     void enter_diff_select();
     void exit_diff_select();
+    float get_diff_fade_in();
     bool is_directory(BaseBox* item);
     bool is_song(BaseBox* item);
     BaseBox* get_current_item();
@@ -120,6 +121,7 @@ public:
     void skip_right();
 
     void update(double current_ms);
+    void draw_background();
     void draw(bool is_ura);
     void draw_score_history();
 };

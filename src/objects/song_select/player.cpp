@@ -19,6 +19,7 @@ SongSelectPlayer::SongSelectPlayer(PlayerNum player_num)
     selected_song = false;
     is_ready = false;
     is_ura = false;
+    voice_played = false;
     ura_toggle = 0;
     diff_select_move_right = false;
     last_moved = 0;
@@ -57,6 +58,9 @@ void SongSelectPlayer::update(double current_time) {
         }
     }
     if (ura_switch.has_value()) ura_switch->update(current_time);
+    if (voice_played && !is_voice_playing()) {
+        is_ready = true;
+    }
 }
 
 bool SongSelectPlayer::is_voice_playing() {
@@ -178,6 +182,8 @@ SongSelectState SongSelectPlayer::handle_input_selecting() {
     bool l_don = is_l_don_pressed(player_num);
     bool r_don = is_r_don_pressed(player_num);
 
+    if (voice_played) return SongSelectState::SONG_SELECTED;
+
     if (l_kat) {
         if (modifier_selector.has_value()) {
             audio.play_sound("kat", "sound");
@@ -201,9 +207,11 @@ SongSelectState SongSelectPlayer::handle_input_selecting() {
         } else {
             audio.play_sound("kat", "sound");
             navigate_difficulty_right();
+            Difficulty prev_difficulty = selected_difficulty;
             if (selected_difficulty >= Difficulty::EASY) {
                 selected_diff_bounce->start();
-                selected_diff_fadein->start();
+                if (prev_difficulty != selected_difficulty)
+                    selected_diff_fadein->start();
             }
         }
     } else if (l_don || r_don) {
@@ -217,9 +225,12 @@ SongSelectState SongSelectPlayer::handle_input_selecting() {
                 modifier_selector = ModifierSelector(player_num);
             } else if (selected_difficulty == Difficulty::NEIRO) {
                 neiro_selector = NeiroSelector(player_num);
-            } else if (selected_difficulty >= Difficulty::EASY || selected_difficulty == Difficulty::BACK) {
-                is_ready = true;
+            } else if (selected_difficulty >= Difficulty::EASY) {
+                voice_played = true;
                 start_background_diffs();
+                audio.play_sound("voice_start_song_" + std::to_string((int)player_num) + "p", "voice");
+            } else if (selected_difficulty == Difficulty::BACK) {
+                is_ready = true;
             }
         }
     }
@@ -296,9 +307,9 @@ void SongSelectPlayer::toggle_ura_mode() {
     ura_switch->start(is_ura);
 }
 
-void SongSelectPlayer::draw_selector(bool is_half) {
+void SongSelectPlayer::draw_selector(bool is_half, float fade_in) {
     float fade = (neiro_selector.has_value() || modifier_selector.has_value())
-        ? 0.5f : selected_diff_fadein->attribute;
+        ? 0.5f : fade_in;
     float direction = diff_select_move_right ? 1.0f : -1.0f;
     float offset = tex.skin_config[SC::SELECTOR_OFFSET].x;
     float balloon_offset_1 = tex.skin_config[SC::SELECTOR_BALLOON_OFFSET_1].x;
@@ -319,16 +330,20 @@ void SongSelectPlayer::draw_selector(bool is_half) {
                 tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_outline" + half_suffix)), {.x=((int)difficulty * offset)});
             }
         } else if (!diff_selector_move_2->is_finished) {
-            tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_outline_back" + half_suffix)), {.x=(((int)prev_diff + 3) * balloon_offset_2) + ((float)diff_selector_move_2->attribute * direction)});
             if (selected_difficulty != Difficulty::BACK) {
+                tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_outline_back" + half_suffix)), {.x=(((int)prev_diff + 3) * balloon_offset_2) + ((float)diff_selector_move_2->attribute * direction)});
                 float bx = (((int)prev_diff + 3) * balloon_offset_2) + balloon_offset_1 + (diff_selector_move_2->attribute * direction);
                 tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_balloon" + half_suffix)), {.x=bx, .fade=fade});
+            } else {
+                tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_outline_back" + half_suffix)), {.x=(((int)prev_diff + 3) * balloon_offset_2) + ((float)diff_selector_move_2->attribute * direction), .fade=fade});
             }
         } else {
-            tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_outline_back" + half_suffix)), {.x=(((int)selected_difficulty + 3) * balloon_offset_2)});
-            if ((int)selected_difficulty != -3) {
+            if (selected_difficulty != Difficulty::BACK) {
+                tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_outline_back" + half_suffix)), {.x=(((int)selected_difficulty + 3) * balloon_offset_2)});
                 float bx = (((int)selected_difficulty + 3) * balloon_offset_2) + balloon_offset_1;
                 tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_balloon" + half_suffix)), {.x=bx, .fade=fade});
+            } else {
+                tex.draw_texture(tex_id_map.at("diff_select/" + (p + "_outline_back" + half_suffix)), {.x=(((int)selected_difficulty + 3) * balloon_offset_2), .fade=fade});
             }
         }
     } else {
@@ -364,9 +379,9 @@ void SongSelectPlayer::draw_background_diffs(SongSelectState state) {
     tex.draw_texture(GLOBAL::BG_DIFF_TEXT,    {.frame=diff_frame_oni, .scale=(float)selected_diff_text_resize->attribute, .center=true, .x=x_offset, .fade=selected_diff_text_fadein->attribute});
 }
 
-void SongSelectPlayer::draw(SongSelectState state, bool is_half) {
+void SongSelectPlayer::draw(SongSelectState state, bool is_half, float diff_fade_in) {
     if (selected_song && state == SongSelectState::SONG_SELECTED) {
-        draw_selector(is_half);
+        draw_selector(is_half, diff_fade_in);
     }
 
     float offset = 0.0f;
