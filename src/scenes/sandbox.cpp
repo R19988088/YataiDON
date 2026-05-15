@@ -101,6 +101,9 @@ void SandboxScreen::on_screen_start() {
     // ── title ─────────────────────────────────────────────────────────────────
     fixtures.push_back(std::make_unique<WarningXFixture>());
     fixtures.push_back(std::make_unique<WarningBachiHitFixture>());
+    fixtures.push_back(std::make_unique<AttractCameraFixture>());
+    fixtures.push_back(std::make_unique<BanaAdvertisementFixture>());
+    fixtures.push_back(std::make_unique<CameraCloudFixture>());
 
     // ── result ────────────────────────────────────────────────────────────────
     fixtures.push_back(std::make_unique<ResultBackgroundFixture>());

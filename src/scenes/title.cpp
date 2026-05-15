@@ -85,7 +85,25 @@ void TitleScreen::scene_manager(double current_ms) {
         if (attract_video->is_finished()) {
             attract_video->stop();
             attract_video.reset();
+            state = TitleState::ATTRACT_CAMERA;
+        }
+    } else if (state == TitleState::ATTRACT_CAMERA) {
+        if (!attract_camera.has_value()) {
+            attract_camera.emplace();
+            bana_advert_1.emplace();
+            bana_advert_2.emplace();
+            camera_cloud.emplace();
+        }
+        attract_camera->update(current_ms);
+        bana_advert_1->update(current_ms);
+        bana_advert_2->update(current_ms);
+        camera_cloud->update(current_ms);
+        if (attract_camera->is_finished()) {
+            attract_camera.reset();
             state = TitleState::OP_VIDEO;
+            bana_advert_1.reset();
+            bana_advert_2.reset();
+            camera_cloud.reset();
         }
     }
 }
@@ -117,6 +135,11 @@ void TitleScreen::draw() {
         warning_board->draw();
     } else if (state == TitleState::ATTRACT_VIDEO && attract_video) {
         attract_video->draw();
+    } else if (state == TitleState::ATTRACT_CAMERA && attract_camera) {
+        attract_camera->draw();
+        camera_cloud->draw();
+        bana_advert_1->draw(33, 136);
+        bana_advert_2->draw(1023, 136);
     }
 
     tex.draw_texture(MOVIE::BACKGROUND, {.fade=fade_out->attribute});

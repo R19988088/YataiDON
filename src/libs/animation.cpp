@@ -295,9 +295,6 @@ void TextureResizeAnimation::restart() {
 
 void TextureResizeAnimation::update(double current_time_ms) {
     if (!is_started) return;
-    else {
-        is_started = !is_finished;
-    }
     BaseAnimation::update(current_time_ms);
 
     double elapsed_time = current_time_ms - start_ms;
