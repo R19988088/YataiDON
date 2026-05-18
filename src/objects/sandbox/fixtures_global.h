@@ -1,5 +1,6 @@
 #include "../../scenes/sandbox.h"
 #include "../global/allnet_indicator.h"
+#include "../global/chara_3d.h"
 #include "../global/coin_overlay.h"
 #include "../global/entry_overlay.h"
 #include "../global/indicator.h"
@@ -10,6 +11,72 @@
 
 constexpr int CENTER_X = 220;
 constexpr int CENTER_Y = 220;
+
+struct Chara3DFixture : public SandboxScreen::Fixture {
+    std::optional<Chara3D> active;
+    std::vector<std::string> model_names;
+    int model_idx = 0;
+    int anim_idx  = 0;
+
+    Chara3DFixture() {
+        name = "Chara3D";
+        screen = "global";
+        fs::path models_dir = fs::path("Skins") / global_data.config->paths.skin / "Models";
+        if (fs::exists(models_dir)) {
+            for (auto& entry : fs::directory_iterator(models_dir)) {
+                if (entry.path().extension() == ".gltf") {
+                    std::string stem = entry.path().stem().string();
+                    if (stem.rfind("cos_", 0) == 0)
+                        model_names.push_back(stem);
+                }
+            }
+            std::sort(model_names.begin(), model_names.end());
+        }
+        if (model_names.empty()) model_names.push_back("cos_000000");
+    }
+
+    uint32_t anchor_texture_id() override { return 0; }
+
+    void reset(double) override {
+        active.emplace(model_names[model_idx]);
+        active->set_anim(anim_idx);
+    }
+
+    void on_space(double ms) override { reset(ms); }
+
+    void on_tab(double) override {
+        if (!active) return;
+        anim_idx = (anim_idx + 1) % active->get_anim_count();
+        active->set_anim(anim_idx);
+    }
+
+    void update(double ms) override { if (active) active->update(ms); }
+
+    void draw() override {
+        if (!active) return;
+        constexpr int PANEL_W = 220;
+        float cx = PANEL_W + (tex.screen_width - PANEL_W) / 2.0f;
+        float cy = tex.screen_height / 2.0f;
+        active->draw(cx, cy);
+    }
+
+    std::vector<std::string> type_names() override { return model_names; }
+    int  get_type() override { return model_idx; }
+    void set_type(int idx, double ms) override { model_idx = idx; reset(ms); }
+
+    std::vector<std::string> debug_lines() override {
+        std::vector<std::string> lines;
+        lines.push_back("model: " + model_names[model_idx]);
+        if (active)
+            lines.push_back("anim: " + std::to_string(anim_idx) +
+                            " / " + std::to_string(active->get_anim_count() - 1) + " | " + active->get_anim_name(anim_idx));
+        return lines;
+    }
+
+    std::string controls() override {
+        return "VARIANT: next anim  type list: model  R/R-CLICK: reset";
+    }
+};
 
 struct AllNetIconFixture : public SandboxScreen::Fixture {
     std::optional<AllNetIcon> active;

@@ -20,9 +20,7 @@ EntryPlayer::EntryPlayer(PlayerNum player_num, int side, BoxManager* box_manager
     );
     indicator = std::make_unique<Indicator>(Indicator::State::SELECT);
 
-    int chara_id = (side == 0) ? 0 : 1;
-    fs::path chara_path = "combined.glb";
-    chara = std::make_unique<Chara3D>(chara_path);
+    chara = std::make_unique<Chara3D>(global_data.config->general.costume_name);
 
     drum_move_1 = (MoveAnimation*)tex.get_animation(2);
     drum_move_2 = (MoveAnimation*)tex.get_animation(3);

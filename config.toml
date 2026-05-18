@@ -13,6 +13,7 @@ fake_online = false
 practice_mode_bar_delay = 1
 score_method = "shinuchi"
 display_bpm = false
+costume_name = "cos_000000"
 
 [nameplate_1p]
 name = 'どんちゃん'

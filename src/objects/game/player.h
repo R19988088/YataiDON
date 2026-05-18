@@ -2,6 +2,7 @@
 
 #include "../../libs/song_parser.h"
 #include "../global/nameplate.h"
+#include "../global/chara_3d.h"
 #include "background.h"
 #include "balloon_counter.h"
 #include "branch_indicator.h"
@@ -85,6 +86,7 @@ private:
     Modifiers modifiers;
     std::optional<SongParser> parser;
     Nameplate nameplate;
+    std::unique_ptr<Chara3D> chara;
 
     // Score management
     int good_count;

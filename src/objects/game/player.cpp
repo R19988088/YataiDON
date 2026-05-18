@@ -52,7 +52,8 @@ Player::Player(std::optional<SongParser>& parser_ref, PlayerNum player_num_param
         plate_info = global_data.config->nameplate_1p;
     }
     nameplate = Nameplate(plate_info.name, plate_info.title, global_data.player_num, plate_info.dan, plate_info.gold, plate_info.rainbow, plate_info.title_bg);
-    //self.chara = Chara2D(player_num - 1, self.bpm)
+    chara = std::make_unique<Chara3D>(global_data.config->general.costume_name);
+    chara->set_anim(20);
     if (global_data.config->general.judge_counter) {
         judge_counter = JudgeCounter();
     }
@@ -369,12 +370,7 @@ void Player::update(double ms_from_start, double current_ms, std::optional<Backg
     if (is_branch) {
         evaluate_branch(ms_from_start);
     }
-
-    /*if self.gauge is None:
-        self.chara.update(current_ms, self.bpm, False, False)
-    else:
-        self.chara.update(current_ms, self.bpm, self.gauge.is_clear, self.gauge.is_rainbow)
-    */
+    chara->update(current_ms);
 }
 
 void Player::draw(double ms_from_start, float x, float y, ray::Shader& mask_shader) {
@@ -660,10 +656,11 @@ void Player::handle_gogotime(double ms_from_start, const TimelineObject& timelin
     if (is_gogo_time) {
         gogo_time = GogoTime();
         fireworks = Fireworks();
-        //self.chara.set_animation('gogo_start')
+        chara->set_anim(21);
+        chara->set_anim(22);
     } else {
         gogo_time.reset();
-        //self.chara.set_animation('gogo_stop')
+        chara->set_anim(20);
     }
 
     timeline_buffer.erase(timeline_buffer.begin() + buffer_index);
@@ -700,6 +697,7 @@ void Player::handle_bpmchange(double ms_from_start, const TimelineObject& timeli
     if (!timeline_object.bpm.has_value()) return;
 
     bpm = timeline_object.bpm.value();
+    chara->set_bpm(bpm);
 
     timeline_buffer.erase(timeline_buffer.begin() + buffer_index);
 }
@@ -907,7 +905,7 @@ void Player::note_correct(const Note& note, double current_ms) {
     if (note.type < NoteType::BALLOON_HEAD) {
         combo++;
         if (combo % 10 == 0) {
-            //chara.set_animation("10_combo")
+            chara->set_anim(5);
         }
         if (combo % 100 == 0) {
             combo_announce = ComboAnnounce(combo, current_ms, player_num);
@@ -1121,9 +1119,11 @@ void Player::drumroll_counter_manager(double current_ms) {
 void Player::balloon_counter_manager(double current_ms) {
     if (!is_balloon && balloon_counter.has_value()) {
         balloon_counter.reset();
+        chara->set_anim(20);
+        chara->set_anim(0);
     }
     if (balloon_counter.has_value()) {
-        //chara.set_animation("balloon_popping");
+        chara->set_anim(1);
         balloon_counter->update(current_ms, curr_balloon_count);
         if (balloon_counter->is_finished()) {
             if (score_method == ScoreMethod::GEN3) {
@@ -1131,7 +1131,8 @@ void Player::balloon_counter_manager(double current_ms) {
                 base_score_list.push_back(ScoreCounterAnimation(player_num, 5000));
             }
             balloon_counter.reset();
-            //chara.set_animation("balloon_pop");
+            chara->set_anim(20);
+            chara->set_anim(3);
         }
     }
 }
@@ -1408,7 +1409,11 @@ void Player::draw_overlays(float y, const ray::Shader& mask_shader) {
             nameplate.draw(tex.skin_config[SC::GAME_NAMEPLATE_1P].x, y + tex.skin_config[SC::GAME_NAMEPLATE_1P].y);
         }
     }
-    //self.chara.draw(y=(self.is_2p*tex.skin_config["game_2p_offset"].y))
+    if (is_balloon) {
+        chara->draw(330, y + 180);
+    } else {
+        chara->draw(160, y + 20);
+    }
 
     if (drumroll_counter.has_value()) {
         drumroll_counter->draw(y + (376 * tex.screen_scale * is_2p));

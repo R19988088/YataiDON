@@ -16,8 +16,7 @@ void EntryScreen::on_screen_start() {
     lua_entry = std::make_unique<EntryScript>();
     lua_entry->start_side_select();
 
-    fs::path chara_path = "combined.glb";
-    chara = std::make_unique<Chara3D>(chara_path);
+    chara = std::make_unique<Chara3D>(global_data.config->general.costume_name);
     announce_played = false;
     players.clear();
     players.resize(2);

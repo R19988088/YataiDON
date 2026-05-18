@@ -4,7 +4,6 @@
 
 SongSelectPlayer::SongSelectPlayer(PlayerNum player_num)
     : player_num(player_num)
-      //chara(player_num - 1),
 {
     NameplateConfig plate_info;
     if (player_num == PlayerNum::P2) {
@@ -24,6 +23,9 @@ SongSelectPlayer::SongSelectPlayer(PlayerNum player_num)
     diff_select_move_right = false;
     last_moved = 0;
 
+    chara = std::make_unique<Chara3D>(global_data.config->general.costume_name);
+    chara->set_anim(23);
+
     diff_selector_move_1          = (MoveAnimation*)tex.get_animation(26, true);
     diff_selector_move_2          = (MoveAnimation*)tex.get_animation(27, true);
     selected_diff_bounce          = (MoveAnimation*)tex.get_animation(33, true);
@@ -42,12 +44,13 @@ void SongSelectPlayer::update(double current_time) {
     diff_selector_move_1->update(current_time);
     diff_selector_move_2->update(current_time);
     nameplate.update(current_time);
-    //chara.update(current_time, 100, false, false);
+    chara->update(current_time);
 
     if (neiro_selector.has_value()) {
         neiro_selector->update(current_time);
         if (neiro_selector->is_finished) {
             neiro_selector.reset();
+            chara->set_anim(24);
         }
     }
 
@@ -55,6 +58,7 @@ void SongSelectPlayer::update(double current_time) {
         modifier_selector->update(current_time);
         if (modifier_selector->is_finished) {
             modifier_selector.reset();
+            chara->set_anim(24);
         }
     }
     if (ura_switch.has_value()) ura_switch->update(current_time);
@@ -223,8 +227,10 @@ SongSelectState SongSelectPlayer::handle_input_selecting() {
         } else {
             if (selected_difficulty == Difficulty::MODIFIER) {
                 modifier_selector = ModifierSelector(player_num);
+                chara->set_anim(25);
             } else if (selected_difficulty == Difficulty::NEIRO) {
                 neiro_selector = NeiroSelector(player_num);
+                chara->set_anim(25);
             } else if (selected_difficulty >= Difficulty::EASY) {
                 voice_played = true;
                 start_background_diffs();
@@ -400,10 +406,10 @@ void SongSelectPlayer::draw(SongSelectState state, bool is_half, float diff_fade
 
     if (player_num == PlayerNum::P1) {
         nameplate.draw(tex.skin_config[SC::SONG_SELECT_NAMEPLATE_1P].x, tex.skin_config[SC::SONG_SELECT_NAMEPLATE_1P].y);
-        //chara.draw({.x=tex.skin_config["song_select_chara_1p"].x, .y=tex.skin_config["song_select_chara_1p"].y + (offset * 0.6f)});
+        chara->draw(tex.skin_config[SC::SONG_SELECT_CHARA_1P].x, tex.skin_config[SC::SONG_SELECT_CHARA_1P].y + (offset * 0.6f));
     } else {
         nameplate.draw(tex.skin_config[SC::SONG_SELECT_NAMEPLATE_2P].x, tex.skin_config[SC::SONG_SELECT_NAMEPLATE_2P].y);
-        //chara.draw({.mirror=true, .x=tex.skin_config["song_select_chara_2p"].x, .y=tex.skin_config["song_select_chara_2p"].y + (offset * 0.6f)});
+        chara->draw(tex.skin_config[SC::SONG_SELECT_CHARA_2P].x, tex.skin_config[SC::SONG_SELECT_CHARA_2P].y + (offset * 0.6f));
     }
 
     if (neiro_selector.has_value())   neiro_selector->draw();

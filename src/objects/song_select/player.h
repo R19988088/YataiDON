@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../global/nameplate.h"
+#include "../global/chara_3d.h"
 #include "neiro.h"
 #include "modifier.h"
 #include "ura_switch.h"
@@ -33,14 +34,13 @@ public:
     TextureResizeAnimation* selected_diff_text_resize;
     FadeAnimation* selected_diff_text_fadein;
 
-    //Chara2D chara;
+    std::unique_ptr<Chara3D> chara;
     Nameplate nameplate;
 
     SongSelectPlayer(PlayerNum player_num);
 
     void update(double current_time);
     bool is_voice_playing();
-    //void on_song_selected(SongFile* selected_song);
 
     SongSelectState select_song();
     SongSelectState handle_input_browsing(double current_ms);

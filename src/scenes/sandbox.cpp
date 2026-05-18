@@ -5,12 +5,15 @@
 #include "../objects/sandbox/fixtures_song_select.h"
 #include "../objects/sandbox/fixtures_global.h"
 
-static constexpr int SB_PANEL_W  = 220;
-static constexpr int SB_ITEM_H   = 32;
-static constexpr int SB_HEADER_H = 20;
-static constexpr int SB_BTN_H    = 28;
-static constexpr int SB_BTN_MARG = 8;
-static constexpr int SB_TYPE_H   = 24;
+static constexpr int SB_PANEL_W       = 220;
+static constexpr int SB_ITEM_H        = 32;
+static constexpr int SB_HEADER_H      = 20;
+static constexpr int SB_BTN_H         = 28;
+static constexpr int SB_BTN_MARG      = 8;
+static constexpr int SB_TYPE_H        = 24;
+static constexpr int SCROLL_TOP       = 46;
+static constexpr int MIN_SCROLL_AREA_H = 60;
+static constexpr int TYPE_AREA_MAX_H  = 120;
 
 // ─── Panel layout helpers ─────────────────────────────────────────────────────
 
@@ -46,10 +49,47 @@ static int panel_content_height(const std::vector<PanelEntry>& layout) {
     return last.content_y + (last.is_header ? SB_HEADER_H : SB_ITEM_H);
 }
 
+// ─── Shared bottom-layout geometry ───────────────────────────────────────────
+
+struct PanelGeometry {
+    int btn_y_pause;
+    int var_btn_y;
+    int type_row_h;
+    int n_types;
+    int type_content_h;   // total pixel height of all type rows
+    int type_area_h;      // visible height of the type scroll area (clamped)
+    int type_area_top;    // screen-y where the type area begins
+    int y_types_start;    // screen-y of first type row (before type_scroll applied)
+    int scroll_bottom;    // screen-y of the bottom of the fixture scroll area
+    int scroll_area_h;    // height of the fixture scroll area
+};
+
+static PanelGeometry compute_geometry(int screen_height, int n_types) {
+    PanelGeometry g;
+    g.type_row_h     = SB_TYPE_H + 2;
+    g.n_types        = n_types;
+    g.btn_y_pause    = screen_height - 16 - 4 - SB_BTN_H;
+    g.var_btn_y      = g.btn_y_pause - 4 - SB_BTN_H;
+
+    // Total content height of the type list (with top/bottom padding gaps)
+    g.type_content_h = n_types > 0 ? n_types * g.type_row_h + 8 + 8 : 0;
+    g.type_area_h    = std::min(g.type_content_h, TYPE_AREA_MAX_H);
+
+    // Push scroll_bottom up by the visible type area; clamp so fixture list
+    // always has at least MIN_SCROLL_AREA_H pixels.
+    const int ideal_scroll_bottom = g.var_btn_y - 4 - g.type_area_h;
+    g.scroll_bottom  = std::max(SCROLL_TOP + MIN_SCROLL_AREA_H, ideal_scroll_bottom);
+    g.scroll_area_h  = g.scroll_bottom - SCROLL_TOP;
+
+    g.type_area_top  = g.scroll_bottom + 8;
+    g.y_types_start  = g.type_area_top;  // rows offset by -type_scroll at draw/hit-test time
+
+    return g;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 void SandboxScreen::ensure_screen_loaded(const std::string& screen_name) {
-    // Global fixtures use global_tex which is always loaded — nothing to do
     if (screen_name == "global" || screen_name == loaded_screen) return;
     try {
         tex.load_screen_textures(screen_name);
@@ -117,6 +157,7 @@ void SandboxScreen::on_screen_start() {
     fixtures.push_back(std::make_unique<UraSwitchFixture>());
 
     // ── global ────────────────────────────────────────────────────────────────
+    fixtures.push_back(std::make_unique<Chara3DFixture>());
     fixtures.push_back(std::make_unique<AllNetIconFixture>());
     fixtures.push_back(std::make_unique<CoinOverlayFixture>());
     fixtures.push_back(std::make_unique<EntryOverlayFixture>());
@@ -126,13 +167,13 @@ void SandboxScreen::on_screen_start() {
 
     current_ms = fixture_start_ms = get_current_ms();
 
-    // Only pre-reset fixtures belonging to the currently loaded screen
     for (auto& f : fixtures) {
         if (f->screen == loaded_screen) f->reset(current_ms);
     }
 
     fixture_idx  = 0;
     panel_scroll = 0;
+    type_scroll  = 0;
 }
 
 Screens SandboxScreen::on_screen_end(Screens next_screen) {
@@ -160,59 +201,56 @@ std::optional<Screens> SandboxScreen::handle_input() {
         fixtures[fixture_idx]->reset(current_ms);
     }
 
-    auto layout = build_panel_layout(fixtures);
-
-    // Fixed bottom layout (computed from bottom up)
-    const int btn_y_pause   = tex.screen_height - 16 - 4 - SB_BTN_H;
-    const int var_btn_y     = btn_y_pause - 4 - SB_BTN_H;
-    auto panel_type_list    = fixtures[fixture_idx]->type_names();
-    const int type_row_h    = SB_TYPE_H + 2;
-    const int n_types       = (int)panel_type_list.size();
-    const int y_above_var   = var_btn_y - 8 - n_types * type_row_h - (n_types ? 8 : 0);
-    const int y_types_start = y_above_var + 8;
-    const int scroll_bottom = y_above_var;
-    const int scroll_area_h = scroll_bottom - 46;
-    const int content_h     = panel_content_height(layout);
-    const int max_scroll    = std::max(0, content_h - scroll_area_h);
+    auto layout              = build_panel_layout(fixtures);
+    auto panel_type_list     = fixtures[fixture_idx]->type_names();
+    auto g                   = compute_geometry(tex.screen_height, (int)panel_type_list.size());
+    const int content_h      = panel_content_height(layout);
+    const int max_scroll     = std::max(0, content_h - g.scroll_area_h);
+    const int max_type_scroll = std::max(0, g.type_content_h - g.type_area_h);
 
     // Mouse-wheel scroll over panel
     if (mouse.x < SB_PANEL_W) {
         float wheel = ray::GetMouseWheelMove();
-        if (wheel != 0.0f)
-            panel_scroll = std::max(0, std::min(panel_scroll - (int)(wheel * SB_ITEM_H), max_scroll));
+        if (wheel != 0.0f) {
+            // Route wheel to type area or fixture list based on cursor position
+            if (g.n_types > 0 && mouse.y >= g.type_area_top && mouse.y < g.var_btn_y)
+                type_scroll = std::max(0, std::min(type_scroll - (int)(wheel * SB_TYPE_H), max_type_scroll));
+            else
+                panel_scroll = std::max(0, std::min(panel_scroll - (int)(wheel * SB_ITEM_H), max_scroll));
+        }
     }
 
     if (lclick && mouse.x < SB_PANEL_W) {
         // Pause button (fixed)
         if (mouse.x >= SB_BTN_MARG && mouse.x < SB_PANEL_W - SB_BTN_MARG &&
-            mouse.y >= btn_y_pause && mouse.y < btn_y_pause + SB_BTN_H)
+            mouse.y >= g.btn_y_pause && mouse.y < g.btn_y_pause + SB_BTN_H)
             paused = !paused;
 
         // Variant button (fixed)
         if (mouse.x >= SB_BTN_MARG && mouse.x < SB_PANEL_W - SB_BTN_MARG &&
-            mouse.y >= var_btn_y && mouse.y < var_btn_y + SB_BTN_H)
+            mouse.y >= g.var_btn_y && mouse.y < g.var_btn_y + SB_BTN_H)
             fixtures[fixture_idx]->on_tab(current_ms);
 
-        // Type buttons (fixed)
-        for (int i = 0; i < n_types; ++i) {
-            int ty = y_types_start + i * type_row_h;
-            if (mouse.y >= ty && mouse.y < ty + SB_TYPE_H) {
+        // Type buttons — hit-test in scissored screen-space
+        if (g.n_types > 0 && mouse.y >= g.type_area_top && mouse.y < g.type_area_top + g.type_area_h) {
+            int cy = (int)mouse.y - g.type_area_top + type_scroll;
+            int i  = cy / g.type_row_h;
+            if (i >= 0 && i < g.n_types)
                 fixtures[fixture_idx]->set_type(i, current_ms);
-                break;
-            }
         }
 
         // Fixture list (scrollable) — only non-header entries are clickable
-        if (mouse.y >= 46 && mouse.y < scroll_bottom) {
-            int cy = (int)mouse.y - 46 + panel_scroll;
+        if (mouse.y >= SCROLL_TOP && mouse.y < g.scroll_bottom) {
+            int cy = (int)mouse.y - SCROLL_TOP + panel_scroll;
             for (const auto& entry : layout) {
                 if (entry.is_header) continue;
                 if (cy >= entry.content_y && cy < entry.content_y + SB_ITEM_H) {
                     int new_idx = entry.fixture_idx;
                     if (new_idx != fixture_idx) {
                         ensure_screen_loaded(fixtures[new_idx]->screen);
-                        fixture_idx = new_idx;
-                        current_ms  = fixture_start_ms = get_current_ms();
+                        fixture_idx  = new_idx;
+                        type_scroll  = 0;  // reset type scroll for new fixture
+                        current_ms   = fixture_start_ms = get_current_ms();
                         fixtures[fixture_idx]->reset(current_ms);
                     }
                     break;
@@ -267,29 +305,20 @@ void SandboxScreen::draw_panel() const {
     ray::DrawText("SANDBOX", 10, 10, 20, ray::WHITE);
     ray::DrawLine(0, 36, SB_PANEL_W, 36, ray::Color{80, 80, 100, 255});
 
-    // Fixed bottom layout (same formula as handle_input)
-    const int btn_y_pause   = tex.screen_height - 16 - 4 - SB_BTN_H;
-    const int var_btn_y     = btn_y_pause - 4 - SB_BTN_H;
-    auto type_list          = fixtures[fixture_idx]->type_names();
-    const int type_row_h    = SB_TYPE_H + 2;
-    const int n_types       = (int)type_list.size();
-    const int y_above_var   = var_btn_y - 8 - n_types * type_row_h - (n_types ? 8 : 0);
-    const int y_types_start = y_above_var + 8;
-    const int scroll_bottom = y_above_var;
+    auto type_list           = fixtures[fixture_idx]->type_names();
+    auto g                   = compute_geometry(tex.screen_height, (int)type_list.size());
+    const int max_type_scroll = std::max(0, g.type_content_h - g.type_area_h);
 
     // ── Scrollable fixture list ───────────────────────────────────────────────
-    constexpr int SCROLL_TOP = 46;
-    const int scroll_area_h  = scroll_bottom - SCROLL_TOP;
-    auto layout              = build_panel_layout(fixtures);
-    const int content_h      = panel_content_height(layout);
-    const int max_scroll     = std::max(0, content_h - scroll_area_h);
+    auto layout          = build_panel_layout(fixtures);
+    const int content_h  = panel_content_height(layout);
+    const int max_scroll = std::max(0, content_h - g.scroll_area_h);
 
-    ray::BeginScissorMode(0, SCROLL_TOP, SB_PANEL_W, scroll_area_h);
+    ray::BeginScissorMode(0, SCROLL_TOP, SB_PANEL_W, g.scroll_area_h);
     for (const auto& entry : layout) {
         int iy = SCROLL_TOP + entry.content_y - panel_scroll;
 
         if (entry.is_header) {
-            // Section label — dim background tint + screen name in caps
             ray::DrawRectangle(0, iy, SB_PANEL_W, SB_HEADER_H, ray::Color{35, 35, 55, 255});
             std::string label = entry.label;
             for (auto& c : label) c = (char)toupper((unsigned char)c);
@@ -311,50 +340,67 @@ void SandboxScreen::draw_panel() const {
     }
     ray::EndScissorMode();
 
+    // Fixture list scrollbar
     if (max_scroll > 0) {
-        float ratio   = (float)scroll_area_h / content_h;
-        int   thumb_h = std::max(16, (int)(scroll_area_h * ratio));
-        int   thumb_y = SCROLL_TOP + (int)((scroll_area_h - thumb_h) * (float)panel_scroll / max_scroll);
+        float ratio   = (float)g.scroll_area_h / content_h;
+        int   thumb_h = std::max(16, (int)(g.scroll_area_h * ratio));
+        int   thumb_y = SCROLL_TOP + (int)((g.scroll_area_h - thumb_h) * (float)panel_scroll / max_scroll);
         ray::DrawRectangle(SB_PANEL_W - 3, thumb_y, 2, thumb_h, ray::Color{120, 130, 160, 180});
     }
 
     // ── Fixed bottom: separator → types → variant → pause ────────────────────
-    ray::DrawLine(0, scroll_bottom + 4, SB_PANEL_W, scroll_bottom + 4, ray::Color{80, 80, 100, 255});
+    ray::DrawLine(0, g.scroll_bottom + 4, SB_PANEL_W, g.scroll_bottom + 4, ray::Color{80, 80, 100, 255});
 
-    // Type buttons
-    if (n_types > 0) {
-        for (int i = 0; i < n_types; ++i) {
-            int ty  = y_types_start + i * type_row_h;
+    // Type buttons (scrollable)
+    if (g.n_types > 0) {
+        ray::BeginScissorMode(0, g.type_area_top, SB_PANEL_W, g.type_area_h);
+        for (int i = 0; i < g.n_types; ++i) {
+            int ty   = g.y_types_start + i * g.type_row_h - type_scroll;
             bool sel = (i == fixtures[fixture_idx]->get_type());
-            bool hov = !sel && mouse.x < SB_PANEL_W && mouse.y >= ty && mouse.y < ty + SB_TYPE_H;
+            // Only hover if the row is actually within the visible scissored area
+            bool hov = !sel && mouse.x < SB_PANEL_W &&
+                       mouse.y >= g.type_area_top && mouse.y < g.type_area_top + g.type_area_h &&
+                       mouse.y >= ty && mouse.y < ty + SB_TYPE_H;
             if (sel)
                 ray::DrawRectangle(SB_BTN_MARG, ty, SB_PANEL_W - SB_BTN_MARG * 2, SB_TYPE_H,
                                    ray::Color{60, 80, 180, 220});
             else if (hov)
                 ray::DrawRectangle(SB_BTN_MARG, ty, SB_PANEL_W - SB_BTN_MARG * 2, SB_TYPE_H,
                                    ray::Color{40, 50, 100, 160});
-            ray::Color tcol = sel ? ray::WHITE : (hov ? ray::Color{220, 220, 255, 255} : ray::Color{180, 180, 180, 255});
+            ray::Color tcol = sel ? ray::WHITE
+                            : (hov ? ray::Color{220, 220, 255, 255}
+                                   : ray::Color{180, 180, 180, 255});
             ray::DrawText(type_list[i].c_str(), SB_BTN_MARG + 4, ty + (SB_TYPE_H - 12) / 2, 12, tcol);
         }
-        int y_types_end = y_types_start + n_types * type_row_h;
+        ray::EndScissorMode();
+
+        // Type area scrollbar
+        if (max_type_scroll > 0) {
+            float ratio   = (float)g.type_area_h / g.type_content_h;
+            int   thumb_h = std::max(10, (int)(g.type_area_h * ratio));
+            int   thumb_y = g.type_area_top + (int)((g.type_area_h - thumb_h) * (float)type_scroll / max_type_scroll);
+            ray::DrawRectangle(SB_PANEL_W - 3, thumb_y, 2, thumb_h, ray::Color{120, 130, 160, 180});
+        }
+
+        int y_types_end = g.type_area_top + g.type_area_h;
         ray::DrawLine(0, y_types_end + 4, SB_PANEL_W, y_types_end + 4, ray::Color{80, 80, 100, 255});
     }
 
     // Variant button
     bool var_hov = mouse.x >= SB_BTN_MARG && mouse.x < SB_PANEL_W - SB_BTN_MARG &&
-                   mouse.y >= var_btn_y && mouse.y < var_btn_y + SB_BTN_H;
-    ray::DrawRectangle(SB_BTN_MARG, var_btn_y, SB_PANEL_W - SB_BTN_MARG * 2, SB_BTN_H,
+                   mouse.y >= g.var_btn_y && mouse.y < g.var_btn_y + SB_BTN_H;
+    ray::DrawRectangle(SB_BTN_MARG, g.var_btn_y, SB_PANEL_W - SB_BTN_MARG * 2, SB_BTN_H,
                        ray::Color{80, 80, 160, static_cast<unsigned char>(var_hov ? 255 : 200)});
-    ray::DrawText("VARIANT", SB_BTN_MARG + 6, var_btn_y + 7, 14, ray::WHITE);
+    ray::DrawText("VARIANT", SB_BTN_MARG + 6, g.var_btn_y + 7, 14, ray::WHITE);
 
     // Pause button
     bool btn_hov = mouse.x >= SB_BTN_MARG && mouse.x < SB_PANEL_W - SB_BTN_MARG &&
-                   mouse.y >= btn_y_pause && mouse.y < btn_y_pause + SB_BTN_H;
+                   mouse.y >= g.btn_y_pause && mouse.y < g.btn_y_pause + SB_BTN_H;
     ray::Color btn_col = paused
         ? ray::Color{160, 50,  50,  static_cast<unsigned char>(btn_hov ? 255 : 210)}
         : ray::Color{50,  130, 50,  static_cast<unsigned char>(btn_hov ? 255 : 210)};
-    ray::DrawRectangle(SB_BTN_MARG, btn_y_pause, SB_PANEL_W - SB_BTN_MARG * 2, SB_BTN_H, btn_col);
-    ray::DrawText(paused ? "|| PAUSED" : ">  PLAYING", SB_BTN_MARG + 6, btn_y_pause + 7, 14, ray::WHITE);
+    ray::DrawRectangle(SB_BTN_MARG, g.btn_y_pause, SB_PANEL_W - SB_BTN_MARG * 2, SB_BTN_H, btn_col);
+    ray::DrawText(paused ? "|| PAUSED" : ">  PLAYING", SB_BTN_MARG + 6, g.btn_y_pause + 7, 14, ray::WHITE);
 
     ray::DrawText("ESC: title", 6, tex.screen_height - 14, 11, ray::Color{120, 120, 130, 255});
 }
@@ -402,7 +448,6 @@ void SandboxScreen::draw() {
         auto& f = fixtures[fixture_idx];
         uint32_t anchor = f->anchor_texture_id();
 
-        // Shift the entire game coordinate space so the anchor texture lands at the viewport center
         const float vcx = SB_PANEL_W + (tex.screen_width  - SB_PANEL_W) / 2.0f;
         const float vcy =               tex.screen_height / 2.0f;
         auto it = tex.textures.find(anchor);

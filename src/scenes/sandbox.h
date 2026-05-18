@@ -28,6 +28,7 @@ private:
     double fixture_start_ms = 0.0;
     bool   paused           = false;
     int    panel_scroll     = 0;
+    int    type_scroll      = 0;
     std::string loaded_screen;
 
     static constexpr int    PANEL_W   = 220;
