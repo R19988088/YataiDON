@@ -692,9 +692,9 @@ std::vector<std::vector<std::string>> TJAParser::data_to_notes(int diff) {
 
 float TJAParser::apply_easing(float t, EasingPoint easing_point, EasingFunction easing_function) {
         switch (easing_point) {
-            case EasingPoint::IN:
+            case EasingPoint::IN_:
                 break;
-            case EasingPoint::OUT:
+            case EasingPoint::OUT_:
                 t = 1.0f - t;
                 break;
             case EasingPoint::IN_OUT:
@@ -735,7 +735,7 @@ float TJAParser::apply_easing(float t, EasingPoint easing_point, EasingFunction 
         }
 
         switch (easing_point) {
-            case EasingPoint::OUT:
+            case EasingPoint::OUT_:
                 result = 1.0f - result;
                 break;
             case EasingPoint::IN_OUT:

@@ -276,8 +276,8 @@ private:
     Note* get_note_ptr(Note& variant);
 
     enum class EasingPoint {
-        IN,
-        OUT,
+        IN_,
+        OUT_,
         IN_OUT
     };
 
