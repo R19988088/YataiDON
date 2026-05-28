@@ -1,0 +1,50 @@
+{
+    "title": "二段",
+    "color": 2,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                98,
+                100
+            ]
+        },
+        {
+            "type": "combo",
+            "range": "more",
+            "value": [
+                410,
+                550
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                25,
+                13
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "0ba410e46edb1e6ab116f4392152cf0a40149e3a57a8323f0a5a688e78247700",
+            "title": "only my railgun",
+            "subtitle": "fripSide/Toaru Kagaku no Railgun",
+            "difficulty": 3
+        },
+        {
+            "hash": "4a2fd9afa28b41ea25b787b539a06f3ee3be24547c2b1a149a7476009a12a385",
+            "title": "Kagerou Daze",
+            "subtitle": "Jin feat. IA & Hatsune Miku",
+            "difficulty": 3
+        },
+        {
+            "hash": "ce82d1c67467cfea09cf2945ede0219e241dc8afb83eec3718fb77330c83471d",
+            "title": "Fuun! Bachio Sensei -New Audio/Chart-",
+            "subtitle": "Go Shiina",
+            "difficulty": 3
+        }
+    ]
+}

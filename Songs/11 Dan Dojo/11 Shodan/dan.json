@@ -1,0 +1,50 @@
+{
+    "title": "初段",
+    "color": 2,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                97,
+                100
+            ]
+        },
+        {
+            "type": "combo",
+            "range": "more",
+            "value": [
+                380,
+                530
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                31,
+                16
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "83ad8e690265b58811b3c62a3c038c8b610f5a8aa897ec1b1da891ebac19a679",
+            "title": "Grip & Break Down‼ -Tatsujin Edit-",
+            "subtitle": "SHU × GUCCI feat. Nana Takahashi/Touhou Project",
+            "difficulty": 3
+        },
+        {
+            "hash": "89576993621e6a9f1664a27e86f6c5a59ee036efbd43ed7c2adeed0ed05fac71",
+            "title": "Ame to Petra",
+            "subtitle": "Balloon feat. flower",
+            "difficulty": 3
+        },
+        {
+            "hash": "14447f1b6b4222d6e019aceae00b2c316b70c1591ee12758e5282c92652c996b",
+            "title": "Taiko March",
+            "subtitle": "Yuuji Masubuchi/Namco Games",
+            "difficulty": 3
+        }
+    ]
+}

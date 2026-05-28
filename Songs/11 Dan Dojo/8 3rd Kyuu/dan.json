@@ -1,0 +1,50 @@
+{
+    "title": "三級",
+    "color": 1,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                95,
+                100
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                1170,
+                1220
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                60,
+                40
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "def84a9d2ffac096751c478a46842b90120d61b7aca0c12f8f8cac1fbcbc9d15",
+            "title": "Charles",
+            "subtitle": "Balloon feat. flower",
+            "difficulty": 2
+        },
+        {
+            "hash": "d2053c147d7f87fe3fda2cdf07b609724cce088c2f0482588e50ff132e2b6b6f",
+            "title": "LOSER",
+            "subtitle": "Kenshi Yonezu",
+            "difficulty": 2
+        },
+        {
+            "hash": "6bab668670435d11de2953958bd1daa4b085db5e1b2b65a54eece5ad88373463",
+            "title": "+♂ -Plus Danshi-",
+            "subtitle": "RΞOL feat. Kagamine Len",
+            "difficulty": 2
+        }
+    ]
+}

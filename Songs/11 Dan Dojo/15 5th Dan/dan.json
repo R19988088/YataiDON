@@ -1,0 +1,50 @@
+{
+    "title": "五段",
+    "color": 2,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                99,
+                100
+            ]
+        },
+        {
+            "type": "combo",
+            "range": "more",
+            "value": [
+                760,
+                960
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                24,
+                12
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "f69555eb8182bf5f53baba79c7da6e57e5bc7078d6a275e54810dffd2133ab5f",
+            "title": "Knuckle Heads ～Ouburoukou～",
+            "subtitle": "Takayuki Aihara/KNUCKLE HEADS",
+            "difficulty": 3
+        },
+        {
+            "hash": "03b8d670644ae5308dfe50aafaacd72a4662cb2b3c6da806c6df5ad2d0e62254",
+            "title": "Kinniku no You na Bokura ～Muscle Love Theme～",
+            "subtitle": "Yoshihito Yano feat. Crab Prince/Muscle March",
+            "difficulty": 3
+        },
+        {
+            "hash": "4aa9ce7e49d577981b1bda38d2fef8e61ffbf75695b9df66970cfd809ba44e79",
+            "title": "The Magician’s Dream",
+            "subtitle": "Tooru Kawaino",
+            "difficulty": 3
+        }
+    ]
+}

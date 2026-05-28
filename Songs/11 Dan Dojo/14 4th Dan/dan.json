@@ -1,0 +1,50 @@
+{
+    "title": "四段",
+    "color": 2,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                99,
+                100
+            ]
+        },
+        {
+            "type": "combo",
+            "range": "more",
+            "value": [
+                630,
+                800
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                24,
+                12
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "fe2f89070d2104eb40dbb249e2073849d042785bf089a1d2f38690b394c8d543",
+            "title": "Sugar Song to Bitter Step",
+            "subtitle": "UNISON SQUARE GARDEN/Blood Blockade Battlefront",
+            "difficulty": 3
+        },
+        {
+            "hash": "2784f4ee874c643ab68ad6835b5af629b480febe10f06924ba851f876cf0bf51",
+            "title": "Jinpuumaru",
+            "subtitle": "Go Shiina",
+            "difficulty": 3
+        },
+        {
+            "hash": "26cc69bf26a3972e3d9af222649baa8a37f6549d14f0994facb770b87c0ae5f4",
+            "title": "Great! Animal Kaiser‼",
+            "subtitle": "Yukiko Yamamoto feat. Akira Kushida/Hyakujuu Taisen Great Animal Kaiser",
+            "difficulty": 3
+        }
+    ]
+}

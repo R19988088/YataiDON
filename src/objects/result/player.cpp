@@ -4,7 +4,8 @@
 ResultPlayer::ResultPlayer(PlayerNum player_num, bool has_2p, bool is_2p)
 : player_num(player_num), has_2p(has_2p), is_2p(is_2p){
     fade_in_bottom = (FadeAnimation*)tex.get_animation(1);
-    // self.chara = Chara2D(int(self.player_num) - 1)
+    chara = std::make_unique<Chara3D>(global_data.config->general.costume_name);
+    chara->set_anim(AnimIndex::DON_NORMAL);
     SessionData& session_data = global_data.session_data[(int)player_num];
     score_animator = ScoreAnimator(session_data.result_data.score);
     NameplateConfig plate_info;
@@ -119,7 +120,7 @@ void ResultPlayer::update(double current_ms, bool fade_in_finished, bool is_skip
         }
     }
     if (crown.has_value()) crown->update(current_ms);
-    //chara.update(current_ms, 100, False, False);
+    chara->update(current_ms);
 }
 
 void ResultPlayer::draw_score_info() {
@@ -208,7 +209,7 @@ void ResultPlayer::draw() {
 
     if (high_score_indicator.has_value()) high_score_indicator->draw();
 
-    //self.chara.draw(y=tex.skin_config["result_chara"].y+(self.is_2p*tex.screen_height//2))
+    chara->draw(tex.skin_config[SC::RESULT_CHARA].x, tex.skin_config[SC::RESULT_CHARA].y+((int)is_2p*tex.screen_height/2));
     if (gauge.has_value()) gauge->draw();
     nameplate.draw(tex.skin_config[SC::RESULT_NAMEPLATE].x, tex.skin_config[SC::RESULT_NAMEPLATE].y+(is_2p*tex.skin_config[SC::RESULT_NAMEPLATE].height));
 }

@@ -1,0 +1,50 @@
+{
+    "title": "三段",
+    "color": 2,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                99,
+                100
+            ]
+        },
+        {
+            "type": "combo",
+            "range": "more",
+            "value": [
+                600,
+                790
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                29,
+                15
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "f6b0bbf5c8e9917b61f3976a3217ca1b2c35f11628d9fd75defc6cdd2d056612",
+            "title": "Jibun REST@RT -Game Version-",
+            "subtitle": "Hidekazu Tanaka feat. 765PRO ALLSTARS/THE iDOLM@STER 2",
+            "difficulty": 3
+        },
+        {
+            "hash": "589065c834fe58a881aaea3ee0e32896ad98045016b347c7cdf6c5b73fbd54c8",
+            "title": "Luka Luka★Night Fever",
+            "subtitle": "samfree feat. Megurine Luka",
+            "difficulty": 3
+        },
+        {
+            "hash": "bfd73d287cf216e97420b48d7c2876e7137c8da0c2e295f711a91d63c5836d36",
+            "title": "SAMURAI ROCKET",
+            "subtitle": "Kohta Takahashi/RIDGE RACER Ⅴ",
+            "difficulty": 3
+        }
+    ]
+}

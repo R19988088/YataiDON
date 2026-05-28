@@ -1,0 +1,50 @@
+{
+    "title": "超人",
+    "color": 4,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgegood",
+            "range": "less",
+            "value": [
+                15,
+                6
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                4,
+                2
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "abbfdd040d4d35eeb2feac7ae5f0a9c9d781945c65dc522760ef17f43c1d09e5",
+            "title": "Puchipochi",
+            "subtitle": "Katsuro Tajima -Minute Waltz Rendition-",
+            "difficulty": 3
+        },
+        {
+            "hash": "df86c823b618f04742661ec00884271ff31478462bb1f64ed69db362720d06ce",
+            "title": "Seiten no Reimei",
+            "subtitle": "steμ feat. siroa",
+            "difficulty": 3
+        },
+        {
+            "hash": "4ee33017bf5fe33edd1cf9a5dbad626989db35244ca73f091fd867e9d4979291",
+            "title": "Hoshikuzu Struck",
+            "subtitle": "t+pazolite",
+            "difficulty": 4
+        }
+    ]
+}

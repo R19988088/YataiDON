@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../global/nameplate.h"
+#include "../global/chara_3d.h"
 #include "../enums.h"
 #include "bottom_characters.h"
 #include "gauge.h"
@@ -14,6 +15,7 @@ private:
     bool has_2p;
     bool is_2p;
     Nameplate nameplate;
+    std::unique_ptr<Chara3D> chara;
 
     bool fade_in_finished;
     FadeAnimation* fade_in_bottom;

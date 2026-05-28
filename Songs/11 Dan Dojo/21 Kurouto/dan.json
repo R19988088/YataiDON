@@ -1,0 +1,50 @@
+{
+    "title": "玄人",
+    "color": 4,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgegood",
+            "range": "less",
+            "value": [
+                50,
+                25
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                6,
+                4
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "823fad885aee1595275fa4c79f802724c983e2ce603a4b4535c5ebc92a908f34",
+            "title": "Juukinzou Fugitive",
+            "subtitle": "Ryuwitty feat. GUMI",
+            "difficulty": 3
+        },
+        {
+            "hash": "9780119708e30cfeafecd0ab2256c5ef946d4524df44536396a3bd1265c3ca54",
+            "title": "Doom Noiz",
+            "subtitle": "Linda AI-CUE/Galaga Legions",
+            "difficulty": 3
+        },
+        {
+            "hash": "28590cc45557e35fc290e40604dad53ca699a4abed152a1ef46fdf7f243396d7",
+            "title": "Kien Banjou Kagura",
+            "subtitle": "Penoreri",
+            "difficulty": 3
+        }
+    ]
+}

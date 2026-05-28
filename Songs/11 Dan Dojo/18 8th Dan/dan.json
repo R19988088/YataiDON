@@ -1,0 +1,50 @@
+{
+    "title": "八段",
+    "color": 3,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgeperfect",
+            "range": "more",
+            "value": [
+                1900,
+                1950
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                11,
+                6
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "f6880dbd9c2325438a069ffcd9c91d58ebe8ed09bdf6a8b055f8f886746985cd",
+            "title": "STAGE 0.ac⒒",
+            "subtitle": "Yuuji Masubuchi",
+            "difficulty": 3
+        },
+        {
+            "hash": "ba3fa867182d5b1eb5cf9ef8824894a57be17e47a9d4dd4019a7a9bf3d0a42fb",
+            "title": "Sunset Runaway",
+            "subtitle": "Ryuichi Takada/Critical Velocity",
+            "difficulty": 3
+        },
+        {
+            "hash": "7e3dfcca770f6d7ee2177374f56e4d65cf4b6755a0d6d99332fe701d34501661",
+            "title": "dance storm",
+            "subtitle": "Shinji Hosoe (Sampling Masters)",
+            "difficulty": 4
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+{
+    "title": "一級",
+    "color": 1,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                96,
+                100
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                1530,
+                1590
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                34,
+                28
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "2163df4d3155c3f9be170b9b26ff1c4da06430d87ef6bdef0a31da7e437c4455",
+            "title": "Cirno’s Perfect Math Class",
+            "subtitle": "IOSYS [ARM & Yuuno Yoshimi] feat. miko/Touhou Project",
+            "difficulty": 2
+        },
+        {
+            "hash": "8dacf5d2cfdd191fcd1072d3596084a7c818af501e77bdef27d85cfbaf501c32",
+            "title": "Lost One no Goukoku",
+            "subtitle": "Neru feat. Kagamine Rin",
+            "difficulty": 2
+        },
+        {
+            "hash": "877cd943af7df8f59a23d36c0d214c074dd2f63aa422690ccb7a57600b53515a",
+            "title": "Sotsu Omeshiki",
+            "subtitle": "Kawagen Collagen feat. unmo",
+            "difficulty": 2
+        }
+    ]
+}

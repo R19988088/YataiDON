@@ -1,0 +1,50 @@
+{
+    "title": "九段",
+    "color": 3,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgeperfect",
+            "range": "more",
+            "value": [
+                2250,
+                2300
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                10,
+                5
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "834483a9d8a486f8248103bc60a80306a82241e7e749be17941d528b571185ed",
+            "title": "Ganso! Genius Cirno-chan☆",
+            "subtitle": "Yuuya Kobayashi (IOSYS) feat. miko/Touhou Project",
+            "difficulty": 3
+        },
+        {
+            "hash": "5bc344763ae58c40feb21e1d094f3a7a0a605a1b1be1230b5805736425377447",
+            "title": "Asteroid",
+            "subtitle": "KORG × BANDAI NAMCO -KORG Kamata Demo Song-",
+            "difficulty": 3
+        },
+        {
+            "hash": "a7d2fb2e52bd46112ed7c96c64b690028763232d8c934d5a4abfba0c0a14d717",
+            "title": "Hatsune Miku no Shoushitsu -Gekijouban-",
+            "subtitle": "cosMo@bousouP feat. Hatsune Miku",
+            "difficulty": 3
+        }
+    ]
+}

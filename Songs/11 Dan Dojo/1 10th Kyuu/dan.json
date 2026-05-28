@@ -1,0 +1,42 @@
+{
+    "title": "十級",
+    "color": 0,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                91,
+                95
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                420,
+                460
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "6aad104506317c097ae43d86fe5e7e4b89301954870891f1548aa95c71d0a4b7",
+            "title": "U.S.A.",
+            "subtitle": "DA PUMP",
+            "difficulty": 1
+        },
+        {
+            "hash": "c6ed1732e2bba3134c46a406dab2e9780bf30d0f6b1de03da4c6a48b98530379",
+            "title": "Lemon",
+            "subtitle": "Kenshi Yonezu",
+            "difficulty": 1
+        },
+        {
+            "hash": "8c997973dd50e50c66b76b72a9d9b59b2b77e8cfc1a141c17ab092553c78c077",
+            "title": "Violence Trigger",
+            "subtitle": "HachiojiP feat. Hatsune Miku/#C.O.M.P.A.S.S.",
+            "difficulty": 1
+        }
+    ]
+}

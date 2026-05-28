@@ -1,0 +1,42 @@
+{
+    "title": "七級",
+    "color": 0,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                93,
+                73
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                960,
+                1000
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "510d41a92e1b6f270b566a8ce50f633217e25230d06c5e8af7083429756f4a36",
+            "title": "Alien Alien",
+            "subtitle": "NayutalieN feat. Hatsune Miku",
+            "difficulty": 1
+        },
+        {
+            "hash": "720b3d421be205ed7ac09d4e6dbc74d1f361d8118b9d6763865b47c8d4663b6c",
+            "title": "Marisa Stole the Precious Thing",
+            "subtitle": "IOSYS [ARM & Yuuno Yoshimi] feat. Karin Fujisaki/Touhou Project",
+            "difficulty": 1
+        },
+        {
+            "hash": "31abad0e1abc094f8615610d6e59b0ca3d4de1890cf7e25ad28d1f3bdc09e333",
+            "title": "Anzu no Uta",
+            "subtitle": "Takafumi Sato feat. Hiromi Igarashi/THE iDOLM@STER ONE FOR ALL",
+            "difficulty": 1
+        }
+    ]
+}

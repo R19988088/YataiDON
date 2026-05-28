@@ -1,0 +1,42 @@
+{
+    "title": "九級",
+    "color": 0,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                92,
+                95
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                750,
+                800
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "3d6f24e4c9b9c757c617280e3a3202007c6a0a2207b1f3deef2ecd7d9ade5351",
+            "title": "Niji",
+            "subtitle": "Fischer’s [Ndaho & Peketan]",
+            "difficulty": 1
+        },
+        {
+            "hash": "165ee9af297c3dd569d023ed6a4aac9a296157d4187b4ff403682e58cae30cd8",
+            "title": "Kurenai",
+            "subtitle": "X JAPAN",
+            "difficulty": 1
+        },
+        {
+            "hash": "805c0f8784c6ec55fb16fe28a817c4a8e56bcfc8e955583d229a51c493a796d6",
+            "title": "Dance Robot Dance",
+            "subtitle": "NayutalieN feat. Hatsune Miku/#C.O.M.P.A.S.S.",
+            "difficulty": 1
+        }
+    ]
+}

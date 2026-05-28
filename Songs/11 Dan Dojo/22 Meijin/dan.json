@@ -1,0 +1,50 @@
+{
+    "title": "名人",
+    "color": 4,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgegood",
+            "range": "less",
+            "value": [
+                28,
+                14
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                5,
+                2
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "f375c71172e8bae0f4dc29a7ef66116ba83696b8fffcbdb875c2582b7a839c39",
+            "title": "Dokadoka",
+            "subtitle": "Katsuro Tajima -Summer Third Movement Rendition-",
+            "difficulty": 3
+        },
+        {
+            "hash": "ca7d14bc3832da73a9fb907b1148947934ac1b640fd6232f3d0d0ad88ce45794",
+            "title": "Ai to Jouzai no Mori",
+            "subtitle": "Hisui",
+            "difficulty": 3
+        },
+        {
+            "hash": "c13aaf8a68df6a06a3c401f9d394216fe1a01b489685dab67e7e3a934373ce64",
+            "title": "Connect Colors",
+            "subtitle": "Ponchi♪ feat. Haxchi",
+            "difficulty": 3
+        }
+    ]
+}

@@ -1,0 +1,42 @@
+{
+    "title": "八級",
+    "color": 0,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                92,
+                95
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                670,
+                710
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "24bd07557acd5756cc8015cb6446b6da5db94468f8d06ababa70aae4e14c256b",
+            "title": "YouTube Theme Song",
+            "subtitle": "HIKAKIN & SEIKIN",
+            "difficulty": 1
+        },
+        {
+            "hash": "6947c281687b8eaefe6990edb37397ac6c24bf34530940635a0276d084f3744e",
+            "title": "Iro wa Nioedo Chirinuru o",
+            "subtitle": "Iceon (Yuuhei Satellite) feat. senya/Touhou Project",
+            "difficulty": 1
+        },
+        {
+            "hash": "c7e3f3085c8437cc6903a75883531f8d3c65cdd4605f06d01f624e3e92753cd8",
+            "title": "Hibana",
+            "subtitle": "DECO*27 feat. Hatsune Miku",
+            "difficulty": 1
+        }
+    ]
+}

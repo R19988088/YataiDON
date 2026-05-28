@@ -1,0 +1,50 @@
+{
+    "title": "達人",
+    "color": 5,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgegood",
+            "range": "less",
+            "value": [
+                8,
+                1
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                3,
+                1
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "7375dd19fbdae25761f404ca02d638e1b5c3405e89711b82b88e54f62993057b",
+            "title": "Shippuudotou",
+            "subtitle": "xi",
+            "difficulty": 4
+        },
+        {
+            "hash": "b035fecadcad3687b2a1b9fdd93f1189666af436e78e1be1180f3a8b380da452",
+            "title": "Souryuu no Ran",
+            "subtitle": "Tatsh a.k.a. Zeami",
+            "difficulty": 3
+        },
+        {
+            "hash": "fb2d22d4b95f439baa5ff9bf0df9413885701c8687431a4ae9d2abf808333fac",
+            "title": "poxei♢DOON",
+            "subtitle": "Kaneko Chiharu",
+            "difficulty": 3
+        }
+    ]
+}

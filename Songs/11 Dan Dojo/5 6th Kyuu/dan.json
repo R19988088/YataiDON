@@ -1,0 +1,42 @@
+{
+    "title": "六級",
+    "color": 0,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                94,
+                97
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                820,
+                840
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "b46a2e49f71f41274700256340d633a9ef06873365393f7b90449cb3096b0c3c",
+            "title": "Noushou Sakuretsu Girl",
+            "subtitle": "rerulili feat. Hatsune Miku & GUMI",
+            "difficulty": 1
+        },
+        {
+            "hash": "4d23653dd538035c03fd844500aed1d1638bd77828b02f7603b57f2bc23f97a9",
+            "title": "Bad Apple‼",
+            "subtitle": "Alstroemeria Records feat. nomico/Touhou Project",
+            "difficulty": 1
+        },
+        {
+            "hash": "812b9b1ca838a5a4ca12be6c696fae27dc05201a43438d77be111f08736f517a",
+            "title": "Asu no Yozora Shoukaihan",
+            "subtitle": "Orangestar feat. IA",
+            "difficulty": 1
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+{
+    "title": "四級",
+    "color": 1,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                95,
+                99
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                1190,
+                1240
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                80,
+                60
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "9259416faeb2b7d42546cd316d9342b6af39e32b7d96fd18b9ecf880a2919b01",
+            "title": "Zankyou",
+            "subtitle": "164 feat. GUMI/#C.O.M.P.A.S.S.",
+            "difficulty": 2
+        },
+        {
+            "hash": "2163df4d3155c3f9be170b9b26ff1c4da06430d87ef6bdef0a31da7e437c4455",
+            "title": "Cirno’s Perfect Math Class",
+            "subtitle": "IOSYS [ARM & Yuuno Yoshimi] feat. miko/Touhou Project",
+            "difficulty": 2
+        },
+        {
+            "hash": "a63966226942bcd30d1b0c2aae2ce73ae8860299da788231fbc09a82ffa10bb5",
+            "title": "Taiyoukei Disco",
+            "subtitle": "NayutalieN feat. Hatsune Miku",
+            "difficulty": 2
+        }
+    ]
+}

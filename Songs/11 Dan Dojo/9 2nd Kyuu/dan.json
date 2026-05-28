@@ -1,0 +1,50 @@
+{
+    "title": "二級",
+    "color": 1,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                96,
+                100
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                1380,
+                1440
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                48,
+                30
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "0bc8fabe30bd3ac37e718f5885cfe69171ff26ee822992001b541298356b3a7e",
+            "title": "Utakata, Ai no Mahoroba",
+            "subtitle": "Yuuhei Satellite/Touhou Project",
+            "difficulty": 2
+        },
+        {
+            "hash": "5dce9f3c03c212685c7e93da19c5098a9a7e65c69350bd527bb7b59a844c646e",
+            "title": "Zen Zen Zense",
+            "subtitle": "RADWIMPS/Your Name.",
+            "difficulty": 2
+        },
+        {
+            "hash": "bd6bd5e640d098c94ad5f9d52d52fc70c29ef6248549c61fc4e729da6c4dc724",
+            "title": "Last Brutal Sister Flandre S",
+            "subtitle": "beatMARIO (COOL&CREATE)/Touhou Project",
+            "difficulty": 2
+        }
+    ]
+}

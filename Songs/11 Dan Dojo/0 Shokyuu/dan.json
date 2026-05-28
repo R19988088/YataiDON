@@ -1,0 +1,42 @@
+{
+    "title": "初級",
+    "color": 0,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                90,
+                95
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                420,
+                460
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "e17af0d8d59274b4d36404eea2d187bd286b638eb74e108a700abe96123f27f9",
+            "title": "Zassou",
+            "subtitle": "HIKAKIN & SEIKIN",
+            "difficulty": 0
+        },
+        {
+            "hash": "86124383ac0d7afbbaa622e49e1692affdd960091dbbcde4b8a8601373038cd6",
+            "title": "Mission! Ken・Kou・Dai・Ichi",
+            "subtitle": "Hataraku Saibou/Cells At Work",
+            "difficulty": 0
+        },
+        {
+            "hash": "9d280af365b33d661e133fbc38e7f47f2a178650ebaaa12a692b5d60643b137c",
+            "title": "A Cruel Angel's Thesis ",
+            "subtitle": "Youko Takahashi/Neon Genesis Evangelion",
+            "difficulty": 0
+        }
+    ]
+}

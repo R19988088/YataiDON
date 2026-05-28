@@ -1,0 +1,50 @@
+{
+    "title": "五級",
+    "color": 1,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                94,
+                97
+            ]
+        },
+        {
+            "type": "hit",
+            "range": "more",
+            "value": [
+                610,
+                640
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                55,
+                44
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "eea7084728ce56428abd50cf527131c421ebd97ff78b37887093fc1620d5ead6",
+            "title": "Candy Pop",
+            "subtitle": "TWICE",
+            "difficulty": 2
+        },
+        {
+            "hash": "1b3d06f1b7aa106fe76415044d43cfb3ffe0dca6fde9f7e4c3867e4ca06ac65d",
+            "title": "POP TEAM EPIC",
+            "subtitle": "Sumire Uesaka/Pop Team Epic",
+            "difficulty": 2
+        },
+        {
+            "hash": "6da4ebece7db653e705526b7974cbc8f3422217949ce8f5eccd14bb3ec55a7cd",
+            "title": "Glass o Ware!",
+            "subtitle": "Sakurazaka46/Docomo Student Discounts",
+            "difficulty": 2
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+{
+    "title": "七段",
+    "color": 3,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgeperfect",
+            "range": "more",
+            "value": [
+                1790,
+                1850
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                15,
+                8
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "2b277988efe884f8028fbd2be72040641cf48ef6a1a42bbe541456981c1df72c",
+            "title": "Jikuuchou Jikuu 1-ka",
+            "subtitle": "Kawagen Collagen feat. unmo",
+            "difficulty": 3
+        },
+        {
+            "hash": "478580c7ca77fb9200aede2829f8b03cbf668b015408ff11960c45b44a275483",
+            "title": "Night and Day",
+            "subtitle": "Nobuhide Isayama & Masako Oogami/ACE COMBAT 2",
+            "difficulty": 3
+        },
+        {
+            "hash": "de7bb256d8dfd6d8b13080a2221792de45b86908f0020c40b404aedf27946fc9",
+            "title": "Yozakura Bladerz",
+            "subtitle": "Ponkichi",
+            "difficulty": 3
+        }
+    ]
+}

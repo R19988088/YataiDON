@@ -1,0 +1,50 @@
+{
+    "title": "十段",
+    "color": 3,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgegood",
+            "range": "less",
+            "value": [
+                90,
+                50
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                9,
+                5
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "7aceeb2fa26269755d671e22b9cf8779d19626a1ec1a128e6048238ade10514b",
+            "title": "R.I.",
+            "subtitle": "Yamato × Daisuke Kurosawa",
+            "difficulty": 3
+        },
+        {
+            "hash": "4af0d34ddaec1cf8c3646ed011b6a7a57607d635df30c5a2ebfa54a7bd2a0ebf",
+            "title": "Chikochiko",
+            "subtitle": "Katsuro Tajima -Tico-Tico no Fubá Rendition-",
+            "difficulty": 3
+        },
+        {
+            "hash": "2e78fba528e6d4fbd19159774341a70a122f9bf04220fff08843ead9d6f46940",
+            "title": "Dead or Die",
+            "subtitle": "REDALiCE",
+            "difficulty": 3
+        }
+    ]
+}

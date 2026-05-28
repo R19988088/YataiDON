@@ -1,0 +1,50 @@
+{
+    "title": "六段",
+    "color": 3,
+    "exams": [
+        {
+            "type": "gauge",
+            "range": "more",
+            "value": [
+                100,
+                100
+            ]
+        },
+        {
+            "type": "judgeperfect",
+            "range": "more",
+            "value": [
+                1740,
+                1810
+            ]
+        },
+        {
+            "type": "judgebad",
+            "range": "less",
+            "value": [
+                20,
+                10
+            ]
+        }
+    ],
+    "charts": [
+        {
+            "hash": "04affb601d2e241f5c5169c150a16358c91f0509b9f71e44bcbff22c6cf0311b",
+            "title": "Opa! Opa! RACER -GMT Mashup-",
+            "subtitle": "Shinji Hosoe (Sampling Masters)/Fantasy Zone & RIDGE RACER",
+            "difficulty": 3
+        },
+        {
+            "hash": "20c2d799a7537588840bee76bdbc7e05220807d601266a3254a3df7d5babd8ba",
+            "title": "Sports Digestdon ～Fill in the Sky～",
+            "subtitle": "Junichi Nakatsuru",
+            "difficulty": 4
+        },
+        {
+            "hash": "2f7fe716786fabcca89abd70cc124c47e66b96479975e43dc945b984f7a19a5c",
+            "title": "Lightning Passion",
+            "subtitle": "Ayako Saso (Sampling Masters)",
+            "difficulty": 4
+        }
+    ]
+}
