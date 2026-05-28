@@ -99,15 +99,16 @@ People (in no particular order):
 - [DragonRatTiger](https://github.com/DragonRatTiger/)
 - [Komi](https://github.com/0auBSQ/)
 - [sumandrew](https://github.com/somepin)
-- [chuchy](https://github.com/magickale)
-- [churrochef](github.com/churro-chef)
-- [cainan](https://github.com/cainan-c/)
-- [RyutoSetsujin](https://github.com/RyutoSetsujin/)
 - [WallK](https://github.com/WallK)
-- [Nyannurs](https://github.com/nyannurs)
-- Radix
-- Thonktheta
-- SomehowScarlet
-- SunnyDeez
+- [chuchy](https://github.com/magickale) (osu parser)
+- [churrochef](github.com/churro-chef) (vertical scroll)
+- [cainan](https://github.com/cainan-c/) (3d don chan)
+- [RyutoSetsujin](https://github.com/RyutoSetsujin/)
+- [Nyannurs](https://github.com/nyannurs) (testing)
+- [fehpizza](https://github.com/fehh44) (logo)
+- Radix (testing)
+- Thonktheta (testing)
+- SomehowScarlet (nix os)
+- SunnyDeez (testing)
 
 ---
