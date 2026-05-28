@@ -7,12 +7,29 @@
 #ifdef _WIN32
     #include <windows.h>
 #endif
+#ifdef __APPLE__
+    #include <mach-o/dyld.h>
+#endif
 
 void set_working_directory_to_executable() {
 #ifdef _WIN32
     wchar_t buffer[MAX_PATH];
     GetModuleFileNameW(NULL, buffer, MAX_PATH);
     std::filesystem::path exe_path(buffer);
+#elif __APPLE__
+    char buffer[PATH_MAX];
+    uint32_t size = sizeof(buffer);
+    if (_NSGetExecutablePath(buffer, &size) != 0) {
+        spdlog::error("Failed to get executable path: buffer too small");
+        return;
+    }
+    // Resolve symlinks to get the real path
+    char resolved[PATH_MAX];
+    if (realpath(buffer, resolved) == nullptr) {
+        spdlog::error("Failed to resolve executable path");
+        return;
+    }
+    std::filesystem::path exe_path(resolved);
 #else
     char buffer[PATH_MAX];
     ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
