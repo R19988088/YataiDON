@@ -27,12 +27,14 @@ else
     exit 1
 fi
 
-# Generate checksums for all shipped files
+# Generate per-skin checksums (used by updater for individual file updates)
 echo ""
-echo "Generating checksums.sha256..."
-{
-    sha256sum YataiDON
-    find shader -type f | sort | xargs sha256sum
-    find Skins -type f -not -path '*/.git/*' | sort | xargs sha256sum
-} > checksums.sha256
-echo "checksums.sha256 written ($(wc -l < checksums.sha256) files)"
+echo "Generating skin checksums..."
+git submodule status | while IFS=' ' read -r commit path _; do
+    skin_name=$(basename "$path")
+    (
+        cd "$path"
+        find . -type f -not -path './.git/*' | sort | xargs sha256sum | sed 's|^\./||'
+    ) > "$path/checksums.sha256"
+    echo "  $path/checksums.sha256 written"
+done

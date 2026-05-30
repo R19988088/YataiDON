@@ -2,16 +2,17 @@
 # YataiDON Linux Updater
 #
 # Expected GitHub release assets:
-#   checksums.sha256        sha256sum-format, relative paths from install dir
+#   checksums-linux.sha256  sha256sum-format, relative paths from install dir
 #                           (excludes git-managed skins)
-#   skin-manifest.tsv       path<TAB>repo_url<TAB>commit  for git-managed skins
-#   update.tar.gz           binary + shader + lib
+#   skin-manifest.tsv       path<TAB>repo_url<TAB>commit<TAB>checksums_url
+#   update-linux.tar.gz     binary + shader + lib
+#
+# Skin repos must contain a checksums.sha256 at their root.
 #
 # Usage (standalone):   ./update.sh
 # Usage (from game):    ./update.sh --wait-pid <PID>
 #
 # Requires: curl, python3, sha256sum, tar
-# For git-managed skins: git
 
 set -euo pipefail
 
@@ -35,6 +36,17 @@ done
 die() { echo "[update] Error: $*" >&2; exit 1; }
 log() { echo "[update] $*"; }
 
+# Derive raw file URL from repo URL + commit + filepath
+skin_raw_url() {
+    local repo_url="$1" commit="$2" filepath="$3"
+    local base="${repo_url%.git}"
+    if [[ "$base" == *"github.com"* ]]; then
+        echo "${base/github.com/raw.githubusercontent.com}/$commit/$filepath"
+    else
+        echo "$base/raw/commit/$commit/$filepath"
+    fi
+}
+
 # --- Fetch release metadata ---
 log "Checking for updates..."
 RELEASE_JSON=$(curl -sfL --max-time 10 "$API_URL") || die "GitHub API unreachable"
@@ -56,8 +68,8 @@ asset_url() {
 }
 
 # --- Download checksums and skin manifest ---
-CHECKSUMS_URL=$(asset_url "checksums.sha256")
-[ -z "$CHECKSUMS_URL" ] && die "No checksums.sha256 in release $LATEST_TAG"
+CHECKSUMS_URL=$(asset_url "checksums-linux.sha256")
+[ -z "$CHECKSUMS_URL" ] && die "No checksums-linux.sha256 in release $LATEST_TAG"
 curl -sfL --max-time 30 -o "$TMP_DIR/checksums.sha256" "$CHECKSUMS_URL"
 
 SKIN_MANIFEST_URL=$(asset_url "skin-manifest.tsv")
@@ -67,9 +79,8 @@ else
     touch "$TMP_DIR/skin-manifest.tsv"
 fi
 
-# --- Check if any file in the update package has changed ---
+# --- Check main package ---
 NEED_PACKAGE=0
-
 while read -r expected_hash rel_path; do
     local_file="$INSTALL_DIR/$rel_path"
     if [ -f "$local_file" ]; then
@@ -77,37 +88,26 @@ while read -r expected_hash rel_path; do
         [ "$actual_hash" = "$expected_hash" ] && continue
     fi
     NEED_PACKAGE=1
-    break  # one mismatch is enough to trigger full download
+    break
 done < "$TMP_DIR/checksums.sha256"
 
-# --- Check git-managed skins ---
-declare -A NEED_GIT_SKIN
-NEED_GIT_SKIN_COUNT=0
-HAS_GIT=$(command -v git &>/dev/null && echo 1 || echo 0)
-
-while IFS=$'\t' read -r skin_path repo_url expected_commit; do
+# --- Check installed skins against manifest ---
+NEED_SKIN_COUNT=0
+while IFS=$'\t' read -r skin_path repo_url expected_commit checksums_url; do
     [ -z "$skin_path" ] && continue
-    local_dir="$INSTALL_DIR/$skin_path"
-
-    if [ "$HAS_GIT" = "1" ]; then
-        actual_commit=$(git -C "$local_dir" rev-parse HEAD 2>/dev/null || echo "none")
-    else
-        actual_commit="none"
-    fi
-
-    if [ "$actual_commit" != "$expected_commit" ]; then
-        NEED_GIT_SKIN["$skin_path"]="$repo_url $expected_commit"
-        NEED_GIT_SKIN_COUNT=$((NEED_GIT_SKIN_COUNT+1))
-    fi
+    local_version_file="$INSTALL_DIR/$skin_path/.skin-version"
+    local_commit="none"
+    [ -f "$local_version_file" ] && local_commit=$(cat "$local_version_file")
+    [ "$local_commit" != "$expected_commit" ] && NEED_SKIN_COUNT=$((NEED_SKIN_COUNT+1))
 done < "$TMP_DIR/skin-manifest.tsv"
 
-if [ $NEED_PACKAGE -eq 0 ] && [ $NEED_GIT_SKIN_COUNT -eq 0 ]; then
+if [ $NEED_PACKAGE -eq 0 ] && [ $NEED_SKIN_COUNT -eq 0 ]; then
     log "Already up to date."
     echo "$LATEST_TAG" > "$VERSION_FILE"
     exit 0
 fi
 
-log "Updates needed — package: $NEED_PACKAGE | git skins: $NEED_GIT_SKIN_COUNT"
+log "Updates needed — package: $NEED_PACKAGE | skins: $NEED_SKIN_COUNT"
 
 # --- Wait for game process if requested ---
 if [ -n "$WAIT_PID" ]; then
@@ -115,37 +115,54 @@ if [ -n "$WAIT_PID" ]; then
     while kill -0 "$WAIT_PID" 2>/dev/null; do sleep 0.25; done
 fi
 
-# --- Download and extract update package ---
+# --- Download and extract main package ---
 if [ $NEED_PACKAGE -eq 1 ]; then
-    url=$(asset_url "update.tar.gz")
-    [ -z "$url" ] && die "No update.tar.gz in release $LATEST_TAG"
-    log "Downloading update.tar.gz..."
-    curl -fL --progress-bar -o "$TMP_DIR/update.tar.gz" "$url"
+    url=$(asset_url "update-linux.tar.gz")
+    [ -z "$url" ] && die "No update-linux.tar.gz in release $LATEST_TAG"
+    log "Downloading update-linux.tar.gz..."
+    curl -fL --progress-bar -o "$TMP_DIR/update-linux.tar.gz" "$url"
     log "Extracting..."
-    tar -xzf "$TMP_DIR/update.tar.gz" -C "$INSTALL_DIR"
+    tar -xzf "$TMP_DIR/update-linux.tar.gz" -C "$INSTALL_DIR"
     chmod +x "$INSTALL_DIR/YataiDON"
     log "Package applied."
 fi
 
-# --- Update git-managed skins ---
-if [ $NEED_GIT_SKIN_COUNT -gt 0 ]; then
-    [ "$HAS_GIT" = "0" ] && die "git not found — required to update skins. Install git and retry."
-
-    for skin_path in "${!NEED_GIT_SKIN[@]}"; do
-        read -r repo_url expected_commit <<< "${NEED_GIT_SKIN[$skin_path]}"
+# --- Update skins ---
+if [ $NEED_SKIN_COUNT -gt 0 ]; then
+    while IFS=$'\t' read -r skin_path repo_url expected_commit checksums_url; do
+        [ -z "$skin_path" ] && continue
         local_dir="$INSTALL_DIR/$skin_path"
-        log "Updating $skin_path from git..."
+        local_version_file="$local_dir/.skin-version"
+        local_commit="none"
+        [ -f "$local_version_file" ] && local_commit=$(cat "$local_version_file")
+        [ "$local_commit" = "$expected_commit" ] && continue
 
-        if [ -d "$local_dir" ] && git -C "$local_dir" rev-parse HEAD &>/dev/null; then
-            git -C "$local_dir" fetch --depth 1 origin "$expected_commit" 2>/dev/null || \
-                git -C "$local_dir" fetch --depth 1 origin
-            git -C "$local_dir" reset --hard FETCH_HEAD
-        else
-            rm -rf "$local_dir"
-            git clone --depth 1 "$repo_url" "$local_dir"
-        fi
-        log "$skin_path done."
-    done
+        log "Checking $skin_path..."
+        curl -sfL --max-time 30 -o "$TMP_DIR/skin-checksums.sha256" "$checksums_url" || {
+            log "Warning: could not fetch checksums for $skin_path — skipping"
+            continue
+        }
+
+        changed=0
+        while read -r expected_hash rel_path; do
+            local_file="$local_dir/$rel_path"
+            if [ -f "$local_file" ]; then
+                actual_hash=$(sha256sum "$local_file" | awk '{print $1}')
+                [ "$actual_hash" = "$expected_hash" ] && continue
+            fi
+            raw_url=$(skin_raw_url "$repo_url" "$expected_commit" "$rel_path")
+            mkdir -p "$(dirname "$local_file")"
+            curl -sfL -o "$local_file.tmp" "$raw_url" && mv "$local_file.tmp" "$local_file" || {
+                log "Warning: failed to download $rel_path"
+                rm -f "$local_file.tmp"
+                continue
+            }
+            changed=$((changed+1))
+        done < "$TMP_DIR/skin-checksums.sha256"
+
+        echo "$expected_commit" > "$local_version_file"
+        log "$skin_path: $changed file(s) updated."
+    done < "$TMP_DIR/skin-manifest.tsv"
 fi
 
 echo "$LATEST_TAG" > "$VERSION_FILE"

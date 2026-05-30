@@ -22,3 +22,15 @@ else
     echo "Error: Executable not found at build/bin/YataiDON"
     exit 1
 fi
+
+# Generate per-skin checksums (used by updater for individual file updates)
+echo ""
+echo "Generating skin checksums..."
+git submodule status | while IFS=' ' read -r commit path _; do
+    skin_name=$(basename "$path")
+    (
+        cd "$path"
+        find . -type f -not -path './.git/*' | sort | xargs sha256sum | sed 's|^\./||'
+    ) > "$path/checksums.sha256"
+    echo "  $path/checksums.sha256 written"
+done
