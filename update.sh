@@ -105,7 +105,7 @@ for skin_repo_file in "$INSTALL_DIR"/Skins/*/.skin-repo; do
 
     skin_needs_update=0
     while read -r expected_hash rel_path; do
-        [[ "$rel_path" == "checksums.sha256" ]] && continue
+        [[ "$(basename "$rel_path")" == "checksums.sha256" ]] && continue
         local_file="$skin_dir/$rel_path"
         if [ -f "$local_file" ]; then
             actual_hash=$(sha256sum "$local_file" | awk '{print $1}')
@@ -155,7 +155,7 @@ if [ $NEED_SKIN_COUNT -gt 0 ]; then
 
         changed=0
         while read -r expected_hash rel_path; do
-            [[ "$rel_path" == "checksums.sha256" ]] && continue
+            [[ "$(basename "$rel_path")" == "checksums.sha256" ]] && continue
             local_file="$skin_dir/$rel_path"
             if [ -f "$local_file" ]; then
                 actual_hash=$(sha256sum "$local_file" | awk '{print $1}')
