@@ -130,7 +130,9 @@ void Navigator::join_loader() {
 void Navigator::enqueue_box(std::unique_ptr<BaseBox> box) {
     std::lock_guard<std::mutex> lock(pending_mutex);
     auto last_write = fs::last_write_time(box->path);
-    auto last_write_sys = ch::clock_cast<ch::system_clock>(last_write);
+    auto last_write_sys = ch::system_clock::now() +
+        std::chrono::duration_cast<ch::system_clock::duration>(
+            last_write - std::filesystem::file_time_type::clock::now());
     auto two_weeks_ago = ch::system_clock::now() - ch::weeks(2);
     if (last_write_sys < two_weeks_ago)
         box->is_new = true;
@@ -376,7 +378,9 @@ void Navigator::load_collection_new(const fs::path& path, const BoxDef& box_def)
             if (abort_loading) break;
             if (!is_song_file(entry.path())) continue;
             auto last_write = fs::last_write_time(entry.path().parent_path());
-            auto last_write_sys = ch::clock_cast<ch::system_clock>(last_write);
+            auto last_write_sys = ch::system_clock::now() +
+                std::chrono::duration_cast<ch::system_clock::duration>(
+                    last_write - std::filesystem::file_time_type::clock::now());
             if (last_write_sys < two_weeks_ago) continue;
             if (songs_added > 0 && songs_added % 10 == 0)
                 enqueue_inline_box(make_back_box(path.parent_path()));
