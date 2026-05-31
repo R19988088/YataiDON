@@ -121,17 +121,12 @@ else()
           -O2
           -march=x86-64
           -DNDEBUG
-          -g
-          -gdwarf-4
-          -fno-omit-frame-pointer
       )
   elseif(APPLE)
     target_compile_options(${PROJECT_NAME} PRIVATE
           -O2
           -DNDEBUG
           -flto=auto
-          -g
-          -fno-omit-frame-pointer
       )
   else()
     target_compile_options(${PROJECT_NAME} PRIVATE
@@ -139,8 +134,6 @@ else()
           -march=x86-64
           -DNDEBUG
           -flto=auto
-          -g
-          -fno-omit-frame-pointer
       )
     target_link_options(${PROJECT_NAME} PRIVATE -flto=auto)
   endif()
