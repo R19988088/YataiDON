@@ -139,7 +139,8 @@ private:
 
     bool is_branch;
     std::tuple<float, float, double> curr_branch_reqs;
-    float branch_condition_count;
+    float branch_p_count;
+    int branch_r_count;
     int branch_note_count;
     std::string branch_condition;
 
@@ -191,6 +192,7 @@ private:
     void handle_bpmchange(double ms_from_start, const TimelineObject& timeline_object, int buffer_index);
     void handle_branch_param(double ms_from_start, const TimelineObject& timeline_object, int buffer_index);
     void handle_lyric(double ms_from_start, const TimelineObject& timeline_object, int buffer_index);
+    void handle_section(double ms_from_start, const TimelineObject& timeline_object, int buffer_index);
 
     void play_note_manager(double current_ms, std::optional<Background>& background);
 

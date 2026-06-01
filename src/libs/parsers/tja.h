@@ -36,6 +36,7 @@ struct TimelineObject {
     std::optional<double> delay;
     std::optional<double> bpmchange;
     std::optional<bool> gogo_time;
+    std::optional<bool> section_reset;
 
     std::optional<double> judge_pos_x;
     std::optional<double> judge_pos_y;

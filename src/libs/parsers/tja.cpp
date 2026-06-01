@@ -1127,6 +1127,10 @@ void TJAParser::handle_M(const std::string& value, ParserState& state) {
 
 void TJAParser::handle_SECTION(const std::string& value, ParserState& state) {
     state.is_section_start = true;
+    TimelineObject section;
+    section.start_time = this->current_ms;
+    section.section_reset = true;
+    state.curr_timeline->push_back(section);
 }
 
 void TJAParser::handle_NMSCROLL(const std::string& value, ParserState& state) {

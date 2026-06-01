@@ -121,6 +121,7 @@ void Player::handle_timeline(double ms_from_start) {
         handle_gogotime(ms_from_start, timeline_object, i);
         handle_branch_param(ms_from_start, timeline_object, i);
         handle_lyric(ms_from_start, timeline_object, i);
+        handle_section(ms_from_start, timeline_object, i);
     }
 }
 
@@ -201,14 +202,15 @@ void Player::evaluate_branch(double current_ms) {
     if (current_ms >= branch_end_ms) {
         is_branch = false;
         if (branch_condition == "p") {
-            branch_condition_count = branch_note_count != 0 ? std::max(std::min((int)((double)branch_condition_count / branch_note_count * 100), 100), 0) : 0;
+            branch_p_count = branch_note_count != 0 ? std::max(std::min((int)((double)branch_p_count / branch_note_count * 100), 100), 0) : 0;
         } else if (branch_condition == "r") {
-            branch_condition_count = std::max(curr_drumroll_count, (int)branch_condition_count);
+            branch_r_count = std::max(curr_drumroll_count, branch_r_count);
         }
+        float count = branch_condition == "p" ? branch_p_count : branch_r_count;
         if (branch_indicator.has_value()) {
-            spdlog::info("Branch set to {} based on conditions {}, {}, {}", branch_diff_to_string(branch_indicator->difficulty), branch_condition_count, e_req, m_req);
+            spdlog::info("Branch set to {} based on conditions {}, {}, {}", branch_diff_to_string(branch_indicator->difficulty), count, e_req, m_req);
         }
-        if (branch_condition_count >= e_req && branch_condition_count < m_req && e_req >= 0) {
+        if (count >= e_req && count < m_req && e_req >= 0) {
             if (!branch_e.empty()) {
                 merge_branch_section(branch_e.front(), current_ms);
                 branch_e.pop_front();
@@ -226,7 +228,7 @@ void Player::evaluate_branch(double current_ms) {
             if (!branch_n.empty()) {
                 branch_n.pop_front();
             }
-        } else if (branch_condition_count >= m_req) {
+        } else if (count >= m_req) {
             if (!branch_m.empty()) {
                 merge_branch_section(branch_m.front(), current_ms);
                 branch_m.pop_front();
@@ -255,7 +257,8 @@ void Player::evaluate_branch(double current_ms) {
                 branch_e.pop_front();
             }
         }
-        branch_condition_count = 0;
+        branch_p_count = 0;
+        branch_r_count = 0;
         branch_note_count = 0;
     }
 }
@@ -564,7 +567,8 @@ void Player::reset_chart() {
     curr_balloon_count = 0;
     is_branch = false;
     branch_condition = "";
-    branch_condition_count = 0;
+    branch_p_count = 0;
+    branch_r_count = 0;
     branch_note_count = 0;
 
     NoteList total_notes; //all notes including master branch
@@ -767,6 +771,16 @@ void Player::handle_branch_param(double ms_from_start, const TimelineObject& tim
     timeline_buffer.erase(timeline_buffer.begin() + buffer_index);
 }
 
+void Player::handle_section(double ms_from_start, const TimelineObject& timeline_object, int buffer_index) {
+    if (timeline_object.start_time > ms_from_start) return;
+    if (!timeline_object.section_reset.has_value()) return;
+
+    branch_p_count = 0;
+    branch_r_count = 0;
+    branch_note_count = 0;
+    timeline_buffer.erase(timeline_buffer.begin() + buffer_index);
+}
+
 void Player::handle_lyric(double ms_from_start, const TimelineObject& timeline_object, int buffer_index) {
     if (timeline_object.start_time > ms_from_start) return;
     if (!timeline_object.lyric.has_value()) return;
@@ -788,9 +802,7 @@ void Player::play_note_manager(double current_ms, std::optional<Background>& bac
         else if (gauge.has_value()) gauge->add_bad();
 
         don_notes.pop_front();
-        if (is_branch && branch_condition == "p") {
-            branch_condition_count--;
-        }
+        branch_note_count++;
     }
 
     if (!kat_notes.empty() && kat_notes.front().hit_ms + Timing::BAD < current_ms) {
@@ -801,9 +813,7 @@ void Player::play_note_manager(double current_ms, std::optional<Background>& bac
         else if (gauge.has_value()) gauge->add_bad();
 
         kat_notes.pop_front();
-        if (is_branch && branch_condition == "p") {
-            branch_condition_count--;
-        }
+        branch_note_count++;
     }
 
     if (other_notes.empty()) return;
@@ -955,9 +965,7 @@ void Player::check_drumroll(double current_ms, DrumType drum_type, std::optional
     draw_arc_list.push_back(NoteArc(NoteType(drum_type), current_ms, PlayerNum(is_2p + 1), (int)drum_type == 3 || (int)drum_type == 4, false));
     curr_drumroll_count++;
     total_drumroll++;
-    if (branch_condition == "r") {
-        branch_condition_count++;
-    }
+    branch_r_count++;
     if (background.has_value()) background->handle_drumroll(PlayerNum(is_2p + 1));
     score += 100;
     if (base_score_list.size() < 5) {
@@ -1082,9 +1090,7 @@ void Player::check_note(double ms_from_start, DrumType drum_type, double current
             note_correct(curr_note, current_ms);
             if (dan_gauge) dan_gauge->add_good();
             else if (gauge.has_value()) gauge->add_good();
-            if (branch_condition == "p") {
-                branch_condition_count++;
-            }
+            branch_p_count++;
             branch_note_count++;
             if (background.has_value()) background->handle_good(PlayerNum(1 + is_2p));
 
@@ -1099,9 +1105,7 @@ void Player::check_note(double ms_from_start, DrumType drum_type, double current
             note_correct(curr_note, current_ms);
             if (dan_gauge) dan_gauge->add_ok();
             else if (gauge.has_value()) gauge->add_ok();
-            if (branch_condition == "p") {
-                branch_condition_count += 0.5;
-            }
+            branch_p_count += 0.5;
             branch_note_count++;
             if (background.has_value()) background->handle_ok(PlayerNum(1 + is_2p));
 
