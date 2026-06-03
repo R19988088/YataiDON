@@ -34,9 +34,10 @@ void main() {
         accum += texture(texture0, sampleUv).a;
     }
 
-    if (accum <= 0.001) {
+    if (accum <= 0.0) {
         discard;
     }
 
-    fragColor = vec4(0.05, 0.05, 0.05, 1.0);
+    float alpha = clamp(accum / 2.0, 0.0, 1.0);
+    fragColor = vec4(0.05, 0.05, 0.05, alpha);
 }
