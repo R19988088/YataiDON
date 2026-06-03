@@ -26,14 +26,6 @@ struct GeneralConfig {
     int player_2_id;
 };
 
-struct NameplateConfig {
-    std::string name;
-    std::string title;
-    int title_bg;
-    int dan;
-    bool gold;
-    bool rainbow;
-};
 
 struct PathsConfig {
     std::vector<fs::path> tja_path;
@@ -94,8 +86,6 @@ struct VideoConfig {
 
 struct Config {
     GeneralConfig general;
-    NameplateConfig nameplate_1p;
-    NameplateConfig nameplate_2p;
     PathsConfig paths;
     KeysConfig keys;
     Keys1PConfig keys_1p;

@@ -219,26 +219,6 @@ Config get_config() {
         config.general.player_2_id = (*general)["player_2_id"].value_or(1);
     }
 
-    // Parse nameplate_1p
-    if (auto nameplate = config_file["nameplate_1p"].as_table()) {
-        config.nameplate_1p.name = (*nameplate)["name"].value_or("");
-        config.nameplate_1p.title = (*nameplate)["title"].value_or("");
-        config.nameplate_1p.title_bg = (*nameplate)["title_bg"].value_or(0);
-        config.nameplate_1p.dan = (*nameplate)["dan"].value_or(0);
-        config.nameplate_1p.gold = (*nameplate)["gold"].value_or(false);
-        config.nameplate_1p.rainbow = (*nameplate)["rainbow"].value_or(false);
-    }
-
-    // Parse nameplate_2p
-    if (auto nameplate = config_file["nameplate_2p"].as_table()) {
-        config.nameplate_2p.name = (*nameplate)["name"].value_or("");
-        config.nameplate_2p.title = (*nameplate)["title"].value_or("");
-        config.nameplate_2p.title_bg = (*nameplate)["title_bg"].value_or(0);
-        config.nameplate_2p.dan = (*nameplate)["dan"].value_or(0);
-        config.nameplate_2p.gold = (*nameplate)["gold"].value_or(false);
-        config.nameplate_2p.rainbow = (*nameplate)["rainbow"].value_or(false);
-    }
-
     // Parse paths
     if (auto paths = config_file["paths"].as_table()) {
         if (auto tja_path = (*paths)["tja_path"].as_array()) {
@@ -368,26 +348,6 @@ void save_config(const Config& config) {
         {"webcam_number", config.general.webcam_number},
         {"player_1_id", config.general.player_1_id},
         {"player_2_id", config.general.player_2_id}
-    });
-
-    // Nameplate 1P
-    config_table.insert("nameplate_1p", toml::table{
-        {"name", config.nameplate_1p.name},
-        {"title", config.nameplate_1p.title},
-        {"title_bg", config.nameplate_1p.title_bg},
-        {"dan", config.nameplate_1p.dan},
-        {"gold", config.nameplate_1p.gold},
-        {"rainbow", config.nameplate_1p.rainbow}
-    });
-
-    // Nameplate 2P
-    config_table.insert("nameplate_2p", toml::table{
-        {"name", config.nameplate_2p.name},
-        {"title", config.nameplate_2p.title},
-        {"title_bg", config.nameplate_2p.title_bg},
-        {"dan", config.nameplate_2p.dan},
-        {"gold", config.nameplate_2p.gold},
-        {"rainbow", config.nameplate_2p.rainbow}
     });
 
     // Paths

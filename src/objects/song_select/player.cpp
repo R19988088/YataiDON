@@ -10,13 +10,7 @@ SongSelectPlayer::SongSelectPlayer(PlayerNum player_num)
     if (auto p = scores_manager.get_player_data(player_id))
         player_data = *p;
 
-    NameplateConfig plate_info;
-    if (player_num == PlayerNum::P2) {
-        plate_info = global_data.config->nameplate_2p;
-    } else {
-        plate_info = global_data.config->nameplate_1p;
-    }
-    nameplate = Nameplate(plate_info.name, plate_info.title, player_num, plate_info.dan, plate_info.gold, plate_info.rainbow, plate_info.title_bg);
+    nameplate = Nameplate(player_data.username, player_data.title, player_num, player_data.dan, player_data.gold, player_data.rainbow, player_data.title_bg);
 
     selected_difficulty = Difficulty::BACK;
     prev_diff = Difficulty::BACK;

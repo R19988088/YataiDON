@@ -9,8 +9,13 @@ void EntryScreen::on_screen_start() {
     box_manager = std::make_unique<BoxManager>();
     state = EntryState::SELECT_SIDE;
 
-    NameplateConfig plate_info = global_data.config->nameplate_1p;
-    nameplate = Nameplate(plate_info.name, plate_info.title, PlayerNum::ALL, -1, false, false, 0);
+    {
+        auto pd = scores_manager.get_player_data(global_data.config->general.player_1_id);
+        nameplate = Nameplate(
+            pd ? pd->username : "", pd ? pd->title : "",
+            PlayerNum::ALL,
+            pd ? pd->dan : -1, pd ? pd->gold : false, pd ? pd->rainbow : false, pd ? pd->title_bg : 0);
+    }
 
     timer = std::make_unique<Timer>(60, get_current_ms(), [this]() {
         if (box_manager->is_costume_box()) {
@@ -101,8 +106,13 @@ std::optional<Screens> EntryScreen::handle_input() {
         if (players[0] && players[0]->player_num == PlayerNum::P1 && (is_l_don_pressed(PlayerNum::P2) || is_r_don_pressed(PlayerNum::P2))) {
             audio.play_sound("don", VolumePreset::SOUND);
             state = EntryState::SELECT_SIDE;
-            NameplateConfig plate_info = global_data.config->nameplate_2p;
-            nameplate = Nameplate(plate_info.name, plate_info.title, PlayerNum::ALL, -1, false, false, 1);
+            {
+                auto pd = scores_manager.get_player_data(global_data.config->general.player_2_id);
+                nameplate = Nameplate(
+                    pd ? pd->username : "", pd ? pd->title : "",
+                    PlayerNum::ALL,
+                    pd ? pd->dan : -1, pd ? pd->gold : false, pd ? pd->rainbow : false, pd ? pd->title_bg : 0);
+            }
             lua_entry->restart_side_select();
             side = 1;
             reload_preview_chara(global_data.config->general.player_2_id);

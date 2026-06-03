@@ -2,6 +2,7 @@
 #include "../libs/audio.h"
 #include "../libs/input.h"
 #include "../libs/filesystem.h"
+#include "../libs/scores.h"
 
 void save_config(const Config& config);
 
@@ -28,6 +29,8 @@ void SettingsScreen::on_screen_start() {
 
 Screens SettingsScreen::on_screen_end(Screens next_screen) {
     save_config(*global_data.config);
+    scores_manager.save_player_data(scores_manager.player_1_data);
+    scores_manager.save_player_data(scores_manager.player_2_data);
     spdlog::info("Settings saved");
 
     audio.close_audio_device();

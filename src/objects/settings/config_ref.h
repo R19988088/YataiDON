@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../libs/global_data.h"
+#include "../../libs/scores.h"
 #include <variant>
 
 struct ConfigRef {
@@ -47,20 +48,20 @@ inline ConfigRef get_config_ref(const std::string& path) {
     if (path == "general/log_level")                return &c->general.log_level;
     if (path == "general/score_method")             return &c->general.score_method;
     if (path == "general/display_bpm")              return &c->general.display_bpm;
-    // nameplate_1p
-    if (path == "nameplate_1p/name")     return &c->nameplate_1p.name;
-    if (path == "nameplate_1p/title")    return &c->nameplate_1p.title;
-    if (path == "nameplate_1p/title_bg") return &c->nameplate_1p.title_bg;
-    if (path == "nameplate_1p/dan")      return &c->nameplate_1p.dan;
-    if (path == "nameplate_1p/gold")     return &c->nameplate_1p.gold;
-    if (path == "nameplate_1p/rainbow")  return &c->nameplate_1p.rainbow;
-    // nameplate_2p
-    if (path == "nameplate_2p/name")     return &c->nameplate_2p.name;
-    if (path == "nameplate_2p/title")    return &c->nameplate_2p.title;
-    if (path == "nameplate_2p/title_bg") return &c->nameplate_2p.title_bg;
-    if (path == "nameplate_2p/dan")      return &c->nameplate_2p.dan;
-    if (path == "nameplate_2p/gold")     return &c->nameplate_2p.gold;
-    if (path == "nameplate_2p/rainbow")  return &c->nameplate_2p.rainbow;
+    // nameplate_1p → player 1 data cache
+    if (path == "nameplate_1p/name")     return &scores_manager.player_1_data.username;
+    if (path == "nameplate_1p/title")    return &scores_manager.player_1_data.title;
+    if (path == "nameplate_1p/title_bg") return &scores_manager.player_1_data.title_bg;
+    if (path == "nameplate_1p/dan")      return &scores_manager.player_1_data.dan;
+    if (path == "nameplate_1p/gold")     return &scores_manager.player_1_data.gold;
+    if (path == "nameplate_1p/rainbow")  return &scores_manager.player_1_data.rainbow;
+    // nameplate_2p → player 2 data cache
+    if (path == "nameplate_2p/name")     return &scores_manager.player_2_data.username;
+    if (path == "nameplate_2p/title")    return &scores_manager.player_2_data.title;
+    if (path == "nameplate_2p/title_bg") return &scores_manager.player_2_data.title_bg;
+    if (path == "nameplate_2p/dan")      return &scores_manager.player_2_data.dan;
+    if (path == "nameplate_2p/gold")     return &scores_manager.player_2_data.gold;
+    if (path == "nameplate_2p/rainbow")  return &scores_manager.player_2_data.rainbow;
     // keys (single ints stored in config)
     if (path == "keys/exit_key")         return &c->keys.exit_key;
     if (path == "keys/fullscreen_key")   return &c->keys.fullscreen_key;

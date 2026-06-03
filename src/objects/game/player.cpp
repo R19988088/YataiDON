@@ -46,15 +46,12 @@ Player::Player(std::optional<SongParser>& parser_ref, PlayerNum player_num_param
         branch_indicator = BranchIndicator();
         }
     }
-    NameplateConfig plate_info;
-    if (is_2p) {
-        plate_info = global_data.config->nameplate_2p;
-    } else {
-        plate_info = global_data.config->nameplate_1p;
-    }
-    nameplate = Nameplate(plate_info.name, plate_info.title, global_data.player_num, plate_info.dan, plate_info.gold, plate_info.rainbow, plate_info.title_bg);
     int player_id = get_player_id(player_num);
     auto pd = scores_manager.get_player_data(player_id);
+    nameplate = Nameplate(
+        pd ? pd->username : "", pd ? pd->title : "",
+        global_data.player_num,
+        pd ? pd->dan : -1, pd ? pd->gold : false, pd ? pd->rainbow : false, pd ? pd->title_bg : 0);
     std::string costume_name = pd ? std::to_string(pd->chara_cos_index) : "0";
     chara = std::make_unique<Chara3D>(costume_name);
     if (pd) {

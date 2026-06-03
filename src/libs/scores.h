@@ -48,6 +48,8 @@ private:
 public:
     int player_1;
     int player_2;
+    PlayerData player_1_data;
+    PlayerData player_2_data;
     ScoresManager(const fs::path& db_path);
     void py_taiko_import(const fs::path& old_db_path);
     std::optional<Score> get_score(std::string& hash, int difficulty, int player_id);

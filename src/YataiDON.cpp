@@ -238,8 +238,12 @@ int main(int argc, char* argv[]) {
     font_manager.init(root_skin_path / "Graphics/font.ttf");
     audio.init_audio_device(root_skin_path / "Sounds", global_data.config->audio, global_data.config->volume);
 
-    scores_manager.player_1 = scores_manager.add_player(global_data.config->nameplate_1p.name);
-    scores_manager.player_2 = scores_manager.add_player(global_data.config->nameplate_2p.name);
+    scores_manager.player_1 = global_data.config->general.player_1_id;
+    scores_manager.player_2 = global_data.config->general.player_2_id;
+    if (auto pd = scores_manager.get_player_data(scores_manager.player_1))
+        scores_manager.player_1_data = *pd;
+    if (auto pd = scores_manager.get_player_data(scores_manager.player_2))
+        scores_manager.player_2_data = *pd;
 
     Screens initial_screen = check_args(argc, argv);
 

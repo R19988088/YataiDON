@@ -18,13 +18,10 @@ ResultPlayer::ResultPlayer(PlayerNum player_num, bool has_2p, bool is_2p)
     chara->set_anim(AnimIndex::DON_NORMAL);
     SessionData& session_data = global_data.session_data[(int)player_num];
     score_animator = ScoreAnimator(session_data.result_data.score);
-    NameplateConfig plate_info;
-    if (is_2p) {
-        plate_info = global_data.config->nameplate_2p;
-    } else {
-        plate_info = global_data.config->nameplate_1p;
-    }
-    nameplate = Nameplate(plate_info.name, plate_info.title, player_num, plate_info.dan, plate_info.gold, plate_info.rainbow, plate_info.title_bg);
+    nameplate = Nameplate(
+        pd ? pd->username : "", pd ? pd->title : "",
+        player_num,
+        pd ? pd->dan : -1, pd ? pd->gold : false, pd ? pd->rainbow : false, pd ? pd->title_bg : 0);
     update_list = {
         {"score", session_data.result_data.score},
         {"good", session_data.result_data.good},
