@@ -120,7 +120,7 @@ Chara3D::Chara3D(std::string& model_name, bool mirror) {
 
     outline_shader = ray::LoadShader("shader/outline.vs", "shader/outline.fs");
     int thickness_loc = ray::GetShaderLocation(outline_shader, "outlineThickness");
-    float thickness = 0.01f;
+    float thickness = 0.0035f;
     ray::SetShaderValue(outline_shader, thickness_loc, &thickness, ray::SHADER_UNIFORM_FLOAT);
 
     this->mirror = mirror;
@@ -343,6 +343,29 @@ void Chara3D::update(double current_ms) {
             int loop_frames = anims[ai].keyframeCount - 1;
             anim_frame = (anim_frame + 1) % loop_frames;
             ray::UpdateModelAnimation(cos_model, anims[ai], anim_frame);
+            // Push updated vertex/normal/uv buffers to GPU after animation update.
+            for (int m = 0; m < cos_model.meshCount; m++) {
+                auto& mesh = cos_model.meshes[m];
+                if (mesh.vertexCount <= 0) continue;
+                // Vertex positions (location 0)
+                if (mesh.animVertices != nullptr)
+                    ray::UpdateMeshBuffer(mesh, 0, mesh.animVertices, mesh.vertexCount * 3 * sizeof(float), 0);
+                else if (mesh.vertices != nullptr)
+                    ray::UpdateMeshBuffer(mesh, 0, mesh.vertices, mesh.vertexCount * 3 * sizeof(float), 0);
+
+                // Normals (location 2)
+                if (mesh.animNormals != nullptr)
+                    ray::UpdateMeshBuffer(mesh, 2, mesh.animNormals, mesh.vertexCount * 3 * sizeof(float), 0);
+                else if (mesh.normals != nullptr)
+                    ray::UpdateMeshBuffer(mesh, 2, mesh.normals, mesh.vertexCount * 3 * sizeof(float), 0);
+
+                // UVs (primary texcoords: location 1)
+                if (mesh.texcoords != nullptr)
+                    ray::UpdateMeshBuffer(mesh, 1, mesh.texcoords, mesh.vertexCount * 2 * sizeof(float), 0);
+                // secondary texcoords (location 5)
+                if (mesh.texcoords2 != nullptr)
+                    ray::UpdateMeshBuffer(mesh, 5, mesh.texcoords2, mesh.vertexCount * 2 * sizeof(float), 0);
+            }
             last_frame_ms = current_ms;
 
             if (!is_looping && anim_frame == loop_frames - 1) {

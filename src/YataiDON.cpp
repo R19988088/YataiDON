@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
     spdlog::info("Starting YataiDON");
     set_working_directory_to_executable();
     global_data.config = new Config(get_config());
-    unsigned int flags = ray::FLAG_MSAA_4X_HINT | ray::FLAG_WINDOW_RESIZABLE;
+    unsigned int flags = ray::FLAG_WINDOW_RESIZABLE;
     if (global_data.config->video.vsync) {
         flags |= ray::FLAG_VSYNC_HINT;
         spdlog::info("VSync enabled");
