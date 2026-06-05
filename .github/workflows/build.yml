@@ -92,8 +92,12 @@ jobs:
           ldd build/bin/YataiDON | grep -E "(libsndfile|libogg|libvorbis|libFLAC|libopus|libmp3lame|libmpg123|libspeex).*=>" | awk '{print $3}' | \
             grep -v "^$" | xargs -I{} cp -L {} release/YataiDON-Linux/lib/ 2>/dev/null || true
 
+          # Bundle SDL3 shared library
+          ldd build/bin/YataiDON | grep -E "libSDL3.*=>" | awk '{print $3}' | \
+            grep -v "^$" | xargs -I{} cp -L {} release/YataiDON-Linux/lib/ 2>/dev/null || true
+
           # Bundle transitive deps of FFmpeg AND sndfile codec libs
-          for so in release/YataiDON-Linux/lib/lib{av,sw,ogg,vorbis,FLAC,opus,mp3lame,mpg123,speex}*.so*; do
+          for so in release/YataiDON-Linux/lib/lib{av,sw,ogg,vorbis,FLAC,opus,mp3lame,mpg123,speex,SDL3}*.so*; do
             ldd "$so" 2>/dev/null | grep "=>" | awk '{print $3}' | grep -v "^$" | \
               grep -vE "lib(c\.so|m\.so|dl\.so|rt\.so|pthread\.so|gcc_s\.so|stdc\+\+\.so|X11\.so|GL\.so|asound\.so|pulse\.so|jack\.so|Xi\.so|Xrandr\.so|xcb)" | \
               grep -v "ld-linux" | \
