@@ -710,15 +710,13 @@ BoxDef Navigator::parse_box_def(const fs::path& path) {
 }
 
 bool Navigator::has_def_file(const std::filesystem::path& path) {
-    try {
-        std::error_code ec;
-        auto it = fs::recursive_directory_iterator(path, ec);
-        while (it != fs::end(it)) {
-            if (it->path().extension() == ".def") return true;
-            it.increment(ec);
-            if (ec) { ec.clear(); }
-        }
-    } catch (const fs::filesystem_error&) {}
+    std::error_code ec;
+    if (fs::exists(path / "box.def", ec)) return true;
+
+    for (const auto& entry : fs::directory_iterator(path, fs::directory_options::skip_permission_denied, ec)) {
+        if (entry.is_directory(ec) && has_def_file(entry.path()))
+            return true;
+    }
     return false;
 }
 
@@ -813,7 +811,7 @@ void Navigator::setup_back_box(const fs::path& path, bool has_children) {
         items.clear();
         items.push_back(std::move(back));
     } else {
-        back->fade_in(666);
+        back->fade_in(266);
         items.erase(items.begin() + open_index);
         items.insert(items.begin() + open_index, std::move(back));
     }
