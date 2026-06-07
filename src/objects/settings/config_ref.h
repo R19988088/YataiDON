@@ -48,6 +48,7 @@ inline ConfigRef get_config_ref(const std::string& path) {
     if (path == "general/log_level")                return &c->general.log_level;
     if (path == "general/score_method")             return &c->general.score_method;
     if (path == "general/display_bpm")              return &c->general.display_bpm;
+    if (path == "general/touch_input")              return &c->general.touch_input;
     // nameplate_1p → player 1 data cache
     if (path == "nameplate_1p/name")     return &scores_manager.player_1_data.username;
     if (path == "nameplate_1p/title")    return &scores_manager.player_1_data.title;

@@ -47,7 +47,7 @@ std::unique_ptr<BaseOptionBox> SettingsBox::make_option_box(const rapidjson::Val
     return std::make_unique<StrOptionBox>(name, desc, path, values_map);
 }
 
-static constexpr float WRAP_BOTTOM = 650.0f;
+static constexpr float WRAP_BOTTOM = 750.0f;
 static constexpr float WRAP_TOP    = -50.0f;
 static constexpr float BOX_STEP    = 100.0f;
 
