@@ -318,9 +318,9 @@ jobs:
 
       - name: Install CMake 4.3.0
         run: |
-          pip3 install cmake==4.3.0
-          CMAKE_BIN=$(python3 -c "import cmake, os; print(os.path.join(os.path.dirname(cmake.__file__), 'data', 'bin'))")
-          echo "CMAKE_BIN_DIR=$CMAKE_BIN" >> $GITHUB_ENV
+          wget -q https://github.com/Kitware/CMake/releases/download/v4.3.0/cmake-4.3.0-linux-x86_64.tar.gz
+          tar -xzf cmake-4.3.0-linux-x86_64.tar.gz -C $HOME
+          echo "CMAKE_BIN_DIR=$HOME/cmake-4.3.0-linux-x86_64/bin" >> $GITHUB_ENV
 
       - name: Write local.properties
         run: |
