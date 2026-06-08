@@ -34,8 +34,10 @@ inline ray::Shader load_shader(const char* vs_path, const char* fs_path) {
         return buf;
     };
 
-    std::string vs_src = vs_path ? read_asset(repath(vs_path)) : std::string{};
-    std::string fs_src = fs_path ? read_asset(repath(fs_path)) : std::string{};
+    std::string vs_repath = vs_path ? repath(vs_path) : std::string{};
+    std::string fs_repath = fs_path ? repath(fs_path) : std::string{};
+    std::string vs_src = vs_path ? read_asset(vs_repath) : std::string{};
+    std::string fs_src = fs_path ? read_asset(fs_repath) : std::string{};
     return ray::LoadShaderFromMemory(
         vs_src.empty() ? nullptr : vs_src.c_str(),
         fs_src.empty() ? nullptr : fs_src.c_str()

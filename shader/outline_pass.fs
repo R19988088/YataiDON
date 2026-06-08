@@ -4,12 +4,12 @@ in vec2 fragTexCoord;
 out vec4 fragColor;
 
 uniform sampler2D texture0;
-uniform vec2 textureSize;
+uniform vec2 texSize;
 uniform float outlineThickness;
 
 void main() {
     vec2 uv = fragTexCoord;
-    vec2 texel = 1.0 / textureSize;
+    vec2 texel = 1.0 / texSize;
 
     vec4 center = texture(texture0, uv);
     if (center.a > 0.001) {

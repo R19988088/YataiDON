@@ -115,19 +115,24 @@ static std::unordered_map<std::string, int> parse_glb_material_indices(
 }
 
 Chara3D::Chara3D(std::string& model_name, bool mirror) {
-    fxaa_shader   = load_shader("shader/dummy.vs", "shader/fxaa.fs");
-    fxaa_size_loc = ray::GetShaderLocation(fxaa_shader, "textureSize");
+    fxaa_shader   = load_shader("shader/pass.vs", "shader/fxaa.fs");
+    fxaa_size_loc = ray::GetShaderLocation(fxaa_shader, "texSize");
 
-    outline_pass_shader = load_shader("shader/dummy.vs", "shader/outline_pass.fs");
-    outline_pass_size_loc = ray::GetShaderLocation(outline_pass_shader, "textureSize");
+    outline_pass_shader = load_shader("shader/pass.vs", "shader/outline_pass.fs");
+    outline_pass_size_loc = ray::GetShaderLocation(outline_pass_shader, "texSize");
     outline_pass_thickness_loc = ray::GetShaderLocation(outline_pass_shader, "outlineThickness");
     float outline_thickness = 3.0f;
     ray::SetShaderValue(outline_pass_shader, outline_pass_thickness_loc, &outline_thickness, ray::SHADER_UNIFORM_FLOAT);
 
+    null_shader    = load_shader(nullptr, "shader/null.fs");
+    face_shader    = load_shader(nullptr, "shader/face.fs");
     outline_shader = load_shader("shader/outline.vs", "shader/outline.fs");
     int thickness_loc = ray::GetShaderLocation(outline_shader, "outlineThickness");
     float thickness = 0.0035f;
     ray::SetShaderValue(outline_shader, thickness_loc, &thickness, ray::SHADER_UNIFORM_FLOAT);
+
+    if (fxaa_shader.id == 0 || outline_pass_shader.id == 0)
+        use_render_textures = false;
 
     this->mirror = mirror;
     fs::path root_path = fs::path("Skins") / global_data.config->paths.skin / "Models";
@@ -135,7 +140,6 @@ Chara3D::Chara3D(std::string& model_name, bool mirror) {
     fs::path anim_path = root_path / "animations.glb";
     cos_model = ray::LoadModel(model_path.string().c_str());
     model_valid = cos_model.meshCount > 0;
-    if (!model_valid) spdlog::warn("Chara3D: failed to load model '{}'", model_path.string());
     for (int m = 0; m < cos_model.meshCount; m++) {
         auto& mesh = cos_model.meshes[m];
         if (mesh.colors == nullptr) continue;
@@ -143,6 +147,10 @@ Chara3D::Chara3D(std::string& model_name, bool mirror) {
         ray::UpdateMeshBuffer(mesh, 3, mesh.colors, mesh.vertexCount * 4, 0);
     }
     material_indices = parse_glb_material_indices(model_path.string(), recolor_indices, face_material_index, additive_indices, force_opaque_indices);
+#ifdef PLATFORM_ANDROID
+    if (face_material_index != -1 && face_shader.id != 0)
+        cos_model.materials[face_material_index].shader = face_shader;
+#endif
     additive_indices.erase(
         std::remove(additive_indices.begin(), additive_indices.end(), face_material_index),
         additive_indices.end());
@@ -181,6 +189,8 @@ Chara3D::~Chara3D() {
     ray::UnloadModelAnimations(anims, anim_count);
     ray::UnloadModel(cos_model);
     ray::UnloadShader(fxaa_shader);
+    ray::UnloadShader(null_shader);
+    ray::UnloadShader(face_shader);
     ray::UnloadShader(outline_pass_shader);
     if (fxaa_target.id != 0) ray::UnloadRenderTexture(fxaa_target);
     if (scene_target.id != 0) ray::UnloadRenderTexture(scene_target);
@@ -396,7 +406,8 @@ void Chara3D::draw_outline(float x, float y) {
     std::vector<ray::Shader> saved(cos_model.materialCount);
     for (int i = 0; i < cos_model.materialCount; i++) {
         saved[i] = cos_model.materials[i].shader;
-        cos_model.materials[i].shader = outline_shader;
+        bool is_face = (face_material_index != -1 && i == face_material_index && null_shader.id != 0);
+        cos_model.materials[i].shader = is_face ? null_shader : outline_shader;
     }
 
     ray::Matrix saved_transform = cos_model.transform;
@@ -416,9 +427,7 @@ void Chara3D::draw_3d(float x, float y) {
     ray::Matrix saved = cos_model.transform;
     float y_angle = mirror ? -rot_y : rot_y;
     cos_model.transform = rotation_xyz(rot_x * DEG2RAD, y_angle * DEG2RAD, rot_z * DEG2RAD);
-
     ray::DrawModel(cos_model, {x, y, 400.0f}, scale, ray::WHITE);
-
     cos_model.transform = saved;
 }
 

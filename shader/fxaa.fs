@@ -4,14 +4,14 @@ in vec2 fragTexCoord;
 out vec4 fragColor;
 
 uniform sampler2D texture0;
-uniform vec2 textureSize;
+uniform vec2 texSize;
 
 #define FXAA_SPAN_MAX   8.0
 #define FXAA_REDUCE_MUL (1.0 / 8.0)
 #define FXAA_REDUCE_MIN (1.0 / 128.0)
 
 void main() {
-    vec2 inv = 1.0 / textureSize;
+    vec2 inv = 1.0 / texSize;
     vec2 uv = fragTexCoord;
 
     vec3 nw = texture(texture0, uv + vec2(-1.0, -1.0) * inv).rgb;

@@ -107,6 +107,8 @@ private:
     int scene_target_w = 0;
     int scene_target_h = 0;
 
+    ray::Shader null_shader;
+    ray::Shader face_shader;
     ray::Shader outline_shader;
     ray::Shader outline_pass_shader;
     int outline_pass_size_loc = -1;
