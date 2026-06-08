@@ -471,7 +471,7 @@ void Chara3D::draw(float x, float y) {
 
     ray::BeginTextureMode(scene_target);
     ray::ClearBackground(ray::BLANK);
-    ray::BeginBlendMode(ray::BLEND_CUSTOM_SEPARATE);
+    ray::BeginBlendMode(ray::BLEND_ALPHA);
     ray::BeginMode3D(cam3d);
     draw_outline(x, y);
     draw_3d(x, y);
