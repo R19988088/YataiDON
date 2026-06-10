@@ -62,6 +62,18 @@ void GameScreen::on_screen_start() {
         transition->add_loading_graphic((session_data.selected_song.parent_path() / "Loading.png").string());
     }
     transition->start();
+
+    start_ms = get_current_ms() - parser->metadata.offset*1000 - (double)global_data.config->general.audio_offset;
+
+    std::optional<Note> first_note = players.back()->get_first_note();
+    if (first_note.has_value()) {
+        double travel_time = first_note->hit_ms - first_note->load_ms;
+        double initial_ms = parser->metadata.offset * 1000 + (double)global_data.config->general.audio_offset;
+        double extra_delay = initial_ms - (double)start_delay + travel_time;
+        if (extra_delay > 0.0) {
+            start_ms += extra_delay;
+        }
+    }
 }
 
 Screens GameScreen::on_screen_end(Screens next_screen) {
@@ -117,17 +129,6 @@ void GameScreen::init_tja(fs::path song) {
     }
 
     players.push_back(std::make_unique<Player>(parser, global_data.player_num, global_data.session_data[(int)global_data.player_num].selected_difficulty, false, get_player_modifiers(global_data.player_num)));
-    start_ms = get_current_ms() - parser->metadata.offset*1000 - (double)global_data.config->general.audio_offset;
-
-    std::optional<Note> first_note = players.back()->get_first_note();
-    if (first_note.has_value()) {
-        double travel_time = first_note->hit_ms - first_note->load_ms;
-        double initial_ms = parser->metadata.offset * 1000 + (double)global_data.config->general.audio_offset;
-        double extra_delay = initial_ms - (double)start_delay + travel_time;
-        if (extra_delay > 0.0) {
-            start_ms += extra_delay;
-        }
-    }
 }
 
 void GameScreen::start_song(double ms_from_start) {
