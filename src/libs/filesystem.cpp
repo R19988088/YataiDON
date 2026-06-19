@@ -90,7 +90,7 @@ std::vector<fs::path> get_song_files(std::vector<fs::path> root_path) {
         try {
             std::vector<fs::path> osz_files;
             for (const auto& entry : fs::recursive_directory_iterator(
-                     path, fs::directory_options::skip_permission_denied)) {
+                     path, fs::directory_options::skip_permission_denied | fs::directory_options::follow_directory_symlink)) {
                 if (entry.path().extension() == ".osz")
                     osz_files.push_back(entry.path());
             }
@@ -103,7 +103,7 @@ std::vector<fs::path> get_song_files(std::vector<fs::path> root_path) {
         // Second pass: collect .tja and .osu files
         try {
             for (const auto& entry : std::filesystem::recursive_directory_iterator(
-                     path, std::filesystem::directory_options::skip_permission_denied)) {
+                     path, std::filesystem::directory_options::skip_permission_denied | std::filesystem::directory_options::follow_directory_symlink)) {
                 auto ext = entry.path().extension();
                 if (ext == ".tja" || ext == ".osu" || ext == ".bin") {
                     songs.push_back(entry.path());
