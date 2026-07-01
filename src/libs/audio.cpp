@@ -445,8 +445,10 @@ bool AudioEngine::init_audio_device(const fs::path& sounds_path, const AudioConf
             config.dataCallback       = AudioEngine::ma_audio_callback;
             config.pUserData          = this;
             config.periodSizeInFrames = static_cast<ma_uint32>(buffer_size);
-            if (audio_config.exclusive_mode)
+            if (audio_config.exclusive_mode) {
                 config.playback.shareMode = ma_share_mode_exclusive;
+                config.wasapi.usage = ma_wasapi_usage_pro_audio;
+            }
 
             result = ma_device_init(&ma_ctx, &config, &ma_dev);
             if (result == MA_SHARE_MODE_NOT_SUPPORTED && audio_config.exclusive_mode) {
