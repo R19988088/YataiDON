@@ -377,6 +377,11 @@ else()
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
   set(RTAUDIO_BUILD_TESTING OFF CACHE BOOL "" FORCE)
   set(RTAUDIO_TARGETNAME_UNINSTALL "rtaudio_uninstall" CACHE STRING "" FORCE)
+  if(WIN32)
+    set(RTAUDIO_API_WASAPI ON CACHE BOOL "" FORCE)
+    set(RTAUDIO_API_DS ON CACHE BOOL "" FORCE)
+    set(RTAUDIO_API_ASIO ON CACHE BOOL "" FORCE)
+  endif()
   FetchContent_Declare(
     rtaudio
     GIT_REPOSITORY https://github.com/thestk/rtaudio.git

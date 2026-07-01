@@ -299,9 +299,10 @@ Config get_config() {
 
     // Parse audio
     if (auto audio = config_file["audio"].as_table()) {
-        config.audio.device_type = (*audio)["device_type"].value_or(0);
-        config.audio.sample_rate = (*audio)["sample_rate"].value_or(44100);
-        config.audio.buffer_size = (*audio)["buffer_size"].value_or(512);
+        config.audio.device_type   = (*audio)["device_type"].value_or(0);
+        config.audio.sample_rate   = (*audio)["sample_rate"].value_or(44100);
+        config.audio.buffer_size   = (*audio)["buffer_size"].value_or(512);
+        config.audio.exclusive_mode = (*audio)["exclusive_mode"].value_or(false);
     }
 
     // Parse volume
@@ -428,9 +429,10 @@ void save_config(const Config& config) {
 
     // Audio
     config_table.insert("audio", toml::table{
-        {"device_type", config.audio.device_type},
-        {"sample_rate", config.audio.sample_rate},
-        {"buffer_size", config.audio.buffer_size}
+        {"device_type",    config.audio.device_type},
+        {"sample_rate",    config.audio.sample_rate},
+        {"buffer_size",    config.audio.buffer_size},
+        {"exclusive_mode", config.audio.exclusive_mode}
     });
 
     // Volume

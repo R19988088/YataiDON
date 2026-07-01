@@ -419,7 +419,9 @@ bool AudioEngine::init_audio_device(const fs::path& sounds_path, const AudioConf
         unsigned int bufferFrames = static_cast<unsigned int>(buffer_size);
 
         RtAudio::StreamOptions options;
-        options.flags = RTAUDIO_MINIMIZE_LATENCY;
+        options.flags = RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_SCHEDULE_REALTIME;
+        options.priority = 99;
+        if (audio_config.exclusive_mode) options.flags |= RTAUDIO_HOG_DEVICE;
 
         RtAudioErrorType err = rt_audio->openStream(&params, nullptr, RTAUDIO_FLOAT32,
             static_cast<unsigned int>(target_sample_rate), &bufferFrames,
@@ -444,6 +446,7 @@ bool AudioEngine::init_audio_device(const fs::path& sounds_path, const AudioConf
 
         spdlog::info("Audio Device initialized successfully");
         spdlog::info("    > Backend:       RtAudio | {}", RtAudio::getApiDisplayName(rt_audio->getCurrentApi()));
+        spdlog::info("    > Exclusive:     {}", audio_config.exclusive_mode ? "yes" : "no");
         spdlog::info("    > Format:        {}", "Float32");
         spdlog::info("    > Channels:      {}", 2);
         spdlog::info("    > Sample rate:   {}", target_sample_rate);

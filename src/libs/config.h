@@ -67,6 +67,7 @@ struct AudioConfig {
     int device_type;
     int sample_rate;
     int buffer_size;
+    bool exclusive_mode;
 };
 
 struct VolumeConfig {
