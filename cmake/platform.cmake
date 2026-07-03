@@ -6,6 +6,7 @@ if(WIN32)
         setupapi
         ole32
         avrt
+        ksuser
         vorbisenc
         vorbis
         FLAC

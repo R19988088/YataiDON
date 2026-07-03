@@ -433,12 +433,12 @@ bool AudioEngine::init_audio_device(const fs::path& sounds_path, const AudioConf
             spdlog::info("    > Sample rate:   {} Hz", rt_audio->getStreamSampleRate());
             spdlog::info("    > Buffer size:   {} frames (actual)", bufferFrames);
         } else if (audio_config.exclusive_mode &&
-                   wasapi_exclusive::init(static_cast<unsigned int>(target_sample_rate),
-                                           static_cast<unsigned int>(buffer_size),
-                                           &AudioEngine::mix, this)) {
+                   wdmks_exclusive::init(static_cast<unsigned int>(target_sample_rate),
+                                          static_cast<unsigned int>(buffer_size),
+                                          &AudioEngine::mix, this)) {
             is_ready = true;
             spdlog::info("Audio Device initialized successfully");
-            spdlog::info("    > Backend:       WASAPI (raw, exclusive mode)");
+            spdlog::info("    > Backend:       WDM-KS (raw, kernel streaming)");
             spdlog::info("    > Format:        Float32, 2ch, {} Hz", (int)target_sample_rate);
             spdlog::info("    > Buffer size:   {} frames (requested)", buffer_size);
         } else
@@ -514,7 +514,7 @@ void AudioEngine::close_audio_device() {
             sdl_stream = nullptr;
         }
 #ifdef _WIN32
-        wasapi_exclusive::shutdown(); // idempotent no-op if not running
+        wdmks_exclusive::shutdown(); // idempotent no-op if not running
 #endif
         if (sdl_audio_subsystem_initialized) {
             SDL_QuitSubSystem(SDL_INIT_AUDIO);

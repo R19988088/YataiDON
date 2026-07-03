@@ -7,7 +7,7 @@
 #include <SDL3/SDL_init.h>
 #ifdef _WIN32
 #include <RtAudio.h>
-#include "audio/wasapi_exclusive.h"
+#include "audio/wdmks_exclusive.h"
 #endif
 #include <sndfile.h>
 #include <samplerate.h>
