@@ -57,9 +57,7 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/src/libs/audio
     ${raylib_SOURCE_DIR}/src/external
-    ${PORTAUDIO_INCLUDE_DIR}
     ${rapidjson_SOURCE_DIR}/include
     ${tomlplusplus_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/generated
@@ -88,9 +86,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE sndfile samplerate)
-if(WIN32)
+if(NOT ANDROID AND NOT EMSCRIPTEN)
   target_link_libraries(${PROJECT_NAME} PRIVATE rtaudio)
 endif()
+target_link_libraries(${PROJECT_NAME} PRIVATE portaudio)
 
 include(cmake/platform.cmake)
 
@@ -112,7 +111,7 @@ message(STATUS "Project: ${PROJECT_NAME}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Platform: ${CMAKE_SYSTEM_NAME}")
-message(STATUS "Audio backend: SDL3 (WASAPI/DS/CoreAudio/ALSA/PulseAudio/JACK/AAudio/WebAudio) + RtAudio ASIO (Windows only) + raw WASAPI-exclusive (Windows only)")
+message(STATUS "Audio backend: RtAudio (ALSA/JACK/PulseAudio/OSS/CoreAudio/DirectSound/ASIO/WASAPI) + PortAudio (WDM-KS/MME, Windows only) + SDL3 (default/fallback, incl. AAudio/WebAudio)")
 message(STATUS "SDL3: ${SDL3_VERSION}")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32 AND NOT ANDROID)
   message(STATUS "Sanitizers: AddressSanitizer, LeakSanitizer, UndefinedBehaviorSanitizer")

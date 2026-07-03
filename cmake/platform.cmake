@@ -113,10 +113,6 @@ elseif(UNIX)
   if(EXISTS "/usr/bin/mold")
     target_link_options(${PROJECT_NAME} PRIVATE -fuse-ld=mold)
   endif()
-  set_target_properties(${PROJECT_NAME} PROPERTIES
-        BUILD_RPATH "${CMAKE_SOURCE_DIR}/src/libs/audio"
-        INSTALL_RPATH "${CMAKE_SOURCE_DIR}/src/libs/audio"
-    )
   find_library(JACK_LIB jack)
   if(JACK_LIB)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${JACK_LIB})

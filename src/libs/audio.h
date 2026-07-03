@@ -5,9 +5,11 @@
 #include <SDL3/SDL_audio.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
-#ifdef _WIN32
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 #include <RtAudio.h>
-#include "audio/wdmks_exclusive.h"
+#endif
+#ifdef _WIN32
+#include <portaudio.h>
 #endif
 #include <sndfile.h>
 #include <samplerate.h>
@@ -154,8 +156,11 @@ private:
     bool               sdl_audio_subsystem_initialized = false;
     std::vector<float> sdl_scratch_buffer;
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+    RtAudio* rt_audio = nullptr;  // ALSA/JACK/PulseAudio/OSS/CoreAudio/DirectSound/ASIO/WASAPI
+#endif
 #ifdef _WIN32
-    RtAudio* rt_audio = nullptr;  // ASIO (device_type == 6) only
+    PaStream* pa_stream = nullptr;  // WDM-KS/MME
 #endif
 
     std::unordered_map<std::string, sound> sounds;
@@ -163,12 +168,26 @@ private:
 
     std::string path_to_string(const fs::path& path) const;
 
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+    bool init_rtaudio_device(RtAudio::Api api, const char* label);
+#endif
+#ifdef _WIN32
+    bool init_portaudio_device(PaHostApiTypeId api, const char* label);
+#endif
+    bool init_sdl3_device();
+
     static void mix(float* out, unsigned int framesPerBuffer, AudioEngine* engine);
     static void sdl_audio_callback(void* userdata, SDL_AudioStream* stream, int additional_amount, int total_amount);
-#ifdef _WIN32
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
     static int  rt_audio_callback(void* outputBuffer, void* inputBuffer,
                                    unsigned int framesPerBuffer, double streamTime,
                                    unsigned int status, void* userData);
+#endif
+#ifdef _WIN32
+    static int  pa_stream_callback(const void* inputBuffer, void* outputBuffer,
+                                    unsigned long framesPerBuffer,
+                                    const PaStreamCallbackTimeInfo* timeInfo,
+                                    PaStreamCallbackFlags statusFlags, void* userData);
 #endif
 };
 

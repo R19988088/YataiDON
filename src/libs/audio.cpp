@@ -345,7 +345,7 @@ void AudioEngine::sdl_audio_callback(void* userdata, SDL_AudioStream* stream, in
                             static_cast<int>(needed_floats * sizeof(float)));
 }
 
-#ifdef _WIN32
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
 int AudioEngine::rt_audio_callback(void* outputBuffer, void* /*inputBuffer*/,
                                     unsigned int framesPerBuffer, double /*streamTime*/,
                                     unsigned int /*status*/, void* userData) {
@@ -355,16 +355,185 @@ int AudioEngine::rt_audio_callback(void* outputBuffer, void* /*inputBuffer*/,
 }
 #endif
 
-static const char* sdl_driver_name_for(int device_type) {
-    switch (device_type) {
-        case 1: return "alsa";
-        case 2: return "pulseaudio";
-        case 3: return "jack";
-        case 4: return "coreaudio";
-        case 5: return "wasapi";
-        case 7: return "directsound";
-        default: return nullptr; // 0 = auto
+#ifdef _WIN32
+int AudioEngine::pa_stream_callback(const void* /*inputBuffer*/, void* outputBuffer,
+                                     unsigned long framesPerBuffer,
+                                     const PaStreamCallbackTimeInfo* /*timeInfo*/,
+                                     PaStreamCallbackFlags /*statusFlags*/, void* userData) {
+    AudioEngine* engine = static_cast<AudioEngine*>(userData);
+    mix(static_cast<float*>(outputBuffer), static_cast<unsigned int>(framesPerBuffer), engine);
+    return paContinue;
+}
+#endif
+
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+bool AudioEngine::init_rtaudio_device(RtAudio::Api api, const char* label) {
+    rt_audio = new RtAudio(api, [](RtAudioErrorType type, const std::string& errorText) {
+        if (type == RTAUDIO_WARNING)
+            spdlog::warn("RtAudio: {}", errorText);
+        else
+            spdlog::error("RtAudio: {}", errorText);
+    });
+
+    if (rt_audio->getDeviceCount() == 0) {
+        spdlog::error("No audio devices found for RtAudio backend: {}", label);
+        delete rt_audio;
+        rt_audio = nullptr;
+        return false;
     }
+
+    RtAudio::StreamParameters params;
+    params.deviceId     = rt_audio->getDefaultOutputDevice();
+    params.nChannels    = 2;
+    params.firstChannel = 0;
+
+    unsigned int bufferFrames = static_cast<unsigned int>(buffer_size);
+
+    RtAudio::StreamOptions options;
+    options.flags    = RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_SCHEDULE_REALTIME;
+    options.priority = 99;
+
+    RtAudioErrorType err = rt_audio->openStream(&params, nullptr, RTAUDIO_FLOAT32,
+        static_cast<unsigned int>(target_sample_rate), &bufferFrames,
+        &AudioEngine::rt_audio_callback, this, &options);
+    if (err != RTAUDIO_NO_ERROR) {
+        spdlog::error("Failed to open {} stream: {}", label, rt_audio->getErrorText());
+        delete rt_audio;
+        rt_audio = nullptr;
+        return false;
+    }
+
+    err = rt_audio->startStream();
+    if (err != RTAUDIO_NO_ERROR) {
+        spdlog::error("Failed to start {} stream: {}", label, rt_audio->getErrorText());
+        rt_audio->closeStream();
+        delete rt_audio;
+        rt_audio = nullptr;
+        return false;
+    }
+
+    is_ready = true;
+
+    auto dev_info = rt_audio->getDeviceInfo(params.deviceId);
+    spdlog::info("Audio Device initialized successfully");
+    spdlog::info("    > Backend:       RtAudio | {}", label);
+    spdlog::info("    > Device:        {}", dev_info.name);
+    spdlog::info("    > Format:        Float32");
+    spdlog::info("    > Channels:      2");
+    spdlog::info("    > Sample rate:   {} Hz", rt_audio->getStreamSampleRate());
+    spdlog::info("    > Buffer size:   {} frames (actual)", bufferFrames);
+    return true;
+}
+#endif
+
+#ifdef _WIN32
+bool AudioEngine::init_portaudio_device(PaHostApiTypeId api, const char* label) {
+    PaError err = Pa_Initialize();
+    if (err != paNoError) {
+        spdlog::error("Failed to initialize PortAudio: {}", Pa_GetErrorText(err));
+        return false;
+    }
+
+    PaHostApiIndex host_index = Pa_HostApiTypeIdToHostApiIndex(api);
+    if (host_index < 0) {
+        spdlog::error("PortAudio host API {} not available", label);
+        Pa_Terminate();
+        return false;
+    }
+
+    const PaHostApiInfo* host_info = Pa_GetHostApiInfo(host_index);
+    if (!host_info || host_info->defaultOutputDevice == paNoDevice) {
+        spdlog::error("No output device found for PortAudio host API {}", label);
+        Pa_Terminate();
+        return false;
+    }
+
+    PaStreamParameters out_params{};
+    out_params.device                    = host_info->defaultOutputDevice;
+    out_params.channelCount              = 2;
+    out_params.sampleFormat              = paFloat32;
+    out_params.suggestedLatency          = Pa_GetDeviceInfo(out_params.device)->defaultLowOutputLatency;
+    out_params.hostApiSpecificStreamInfo = nullptr;
+
+    err = Pa_OpenStream(&pa_stream, nullptr, &out_params, target_sample_rate,
+                         static_cast<unsigned long>(buffer_size), paNoFlag,
+                         &AudioEngine::pa_stream_callback, this);
+    if (err != paNoError) {
+        spdlog::error("Failed to open {} stream: {}", label, Pa_GetErrorText(err));
+        Pa_Terminate();
+        return false;
+    }
+
+    err = Pa_StartStream(pa_stream);
+    if (err != paNoError) {
+        spdlog::error("Failed to start {} stream: {}", label, Pa_GetErrorText(err));
+        Pa_CloseStream(pa_stream);
+        pa_stream = nullptr;
+        Pa_Terminate();
+        return false;
+    }
+
+    is_ready = true;
+
+    const PaDeviceInfo* dev_info = Pa_GetDeviceInfo(out_params.device);
+    spdlog::info("Audio Device initialized successfully");
+    spdlog::info("    > Backend:       PortAudio | {}", label);
+    spdlog::info("    > Device:        {}", dev_info ? dev_info->name : "unknown");
+    spdlog::info("    > Format:        Float32");
+    spdlog::info("    > Channels:      2");
+    spdlog::info("    > Sample rate:   {} Hz", target_sample_rate);
+    spdlog::info("    > Buffer size:   {} frames (requested)", buffer_size);
+    return true;
+}
+#endif
+
+bool AudioEngine::init_sdl3_device() {
+    SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
+
+    char frames_str[16];
+    std::snprintf(frames_str, sizeof(frames_str), "%lu", buffer_size);
+    SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, frames_str);
+
+    if (!sdl_audio_subsystem_initialized) {
+        if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+            spdlog::error("Failed to init SDL audio subsystem: {}", SDL_GetError());
+            return false;
+        }
+        sdl_audio_subsystem_initialized = true;
+    }
+
+    SDL_AudioSpec spec{};
+    spec.format   = SDL_AUDIO_F32;
+    spec.channels = 2;
+    spec.freq     = static_cast<int>(target_sample_rate);
+
+    sdl_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec,
+                                            AudioEngine::sdl_audio_callback, this);
+    if (!sdl_stream) {
+        spdlog::error("Failed to open SDL audio device stream: {}", SDL_GetError());
+        return false;
+    }
+
+    if (!SDL_ResumeAudioStreamDevice(sdl_stream)) {
+        spdlog::error("Failed to start SDL audio stream: {}", SDL_GetError());
+        SDL_DestroyAudioStream(sdl_stream);
+        sdl_stream = nullptr;
+        return false;
+    }
+
+    is_ready = true;
+
+    SDL_AudioSpec actual_spec{};
+    int actual_frames = 0;
+    SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(sdl_stream), &actual_spec, &actual_frames);
+
+    spdlog::info("Audio Device initialized successfully");
+    spdlog::info("    > Backend:       SDL3 | {}", SDL_GetCurrentAudioDriver());
+    spdlog::info("    > Format:        Float32");
+    spdlog::info("    > Channels:      {} (requested 2)", actual_spec.channels);
+    spdlog::info("    > Sample rate:   {} Hz (requested {} Hz)", actual_spec.freq, (int)target_sample_rate);
+    spdlog::info("    > Buffer size:   {} frames (device-reported)", actual_frames);
+    return true;
 }
 
 bool AudioEngine::init_audio_device(const fs::path& sounds_path, const AudioConfig& audio_config, const VolumeConfig& volume_presets) {
@@ -375,129 +544,27 @@ bool AudioEngine::init_audio_device(const fs::path& sounds_path, const AudioConf
     this->is_ready = false;
     this->master_volume = 1.0f;
     try {
-#if defined(_WIN32)
-        if (audio_config.device_type == 6) {
-            // ASIO via RtAudio (Windows only)
-            rt_audio = new RtAudio(RtAudio::WINDOWS_ASIO, [](RtAudioErrorType type, const std::string& errorText) {
-                if (type == RTAUDIO_WARNING)
-                    spdlog::warn("RtAudio ASIO: {}", errorText);
-                else
-                    spdlog::error("RtAudio ASIO: {}", errorText);
-            });
-
-            if (rt_audio->getDeviceCount() == 0) {
-                spdlog::error("No ASIO devices found");
-                delete rt_audio;
-                rt_audio = nullptr;
-                return false;
-            }
-
-            RtAudio::StreamParameters params;
-            params.deviceId     = rt_audio->getDefaultOutputDevice();
-            params.nChannels    = 2;
-            params.firstChannel = 0;
-
-            unsigned int bufferFrames = static_cast<unsigned int>(buffer_size);
-
-            RtAudio::StreamOptions options;
-            options.flags    = RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_SCHEDULE_REALTIME;
-            options.priority = 99;
-
-            RtAudioErrorType err = rt_audio->openStream(&params, nullptr, RTAUDIO_FLOAT32,
-                static_cast<unsigned int>(target_sample_rate), &bufferFrames,
-                &AudioEngine::rt_audio_callback, this, &options);
-            if (err != RTAUDIO_NO_ERROR) {
-                spdlog::error("Failed to open ASIO stream: {}", rt_audio->getErrorText());
-                delete rt_audio;
-                rt_audio = nullptr;
-                return false;
-            }
-
-            err = rt_audio->startStream();
-            if (err != RTAUDIO_NO_ERROR) {
-                spdlog::error("Failed to start ASIO stream: {}", rt_audio->getErrorText());
-                rt_audio->closeStream();
-                delete rt_audio;
-                rt_audio = nullptr;
-                return false;
-            }
-
-            is_ready = true;
-
-            auto dev_info = rt_audio->getDeviceInfo(params.deviceId);
-            spdlog::info("Audio Device initialized successfully");
-            spdlog::info("    > Backend:       RtAudio | ASIO");
-            spdlog::info("    > Device:        {}", dev_info.name);
-            spdlog::info("    > Format:        Float32");
-            spdlog::info("    > Channels:      2");
-            spdlog::info("    > Sample rate:   {} Hz", rt_audio->getStreamSampleRate());
-            spdlog::info("    > Buffer size:   {} frames (actual)", bufferFrames);
-        } else if (audio_config.exclusive_mode &&
-                   wdmks_exclusive::init(static_cast<unsigned int>(target_sample_rate),
-                                          static_cast<unsigned int>(buffer_size),
-                                          &AudioEngine::mix, this)) {
-            is_ready = true;
-            spdlog::info("Audio Device initialized successfully");
-            spdlog::info("    > Backend:       WDM-KS (raw, kernel streaming)");
-            spdlog::info("    > Format:        Float32, 2ch, {} Hz", (int)target_sample_rate);
-            spdlog::info("    > Buffer size:   {} frames (requested)", buffer_size);
-        } else
-#endif
-        {
-            if (audio_config.exclusive_mode) {
-                spdlog::warn("Exclusive mode unavailable; falling back to SDL3 shared mode");
-            }
-
-            const char* driver = sdl_driver_name_for(audio_config.device_type);
-            if (driver) SDL_SetHint(SDL_HINT_AUDIO_DRIVER, driver);
-            else        SDL_ResetHint(SDL_HINT_AUDIO_DRIVER);
-
-            char frames_str[16];
-            std::snprintf(frames_str, sizeof(frames_str), "%lu", buffer_size);
-            SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, frames_str);
-
-            if (!sdl_audio_subsystem_initialized) {
-                if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-                    spdlog::error("Failed to init SDL audio subsystem: {}", SDL_GetError());
-                    return false;
-                }
-                sdl_audio_subsystem_initialized = true;
-            }
-
-            SDL_AudioSpec spec{};
-            spec.format   = SDL_AUDIO_F32;
-            spec.channels = 2;
-            spec.freq     = static_cast<int>(target_sample_rate);
-
-            sdl_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec,
-                                                    AudioEngine::sdl_audio_callback, this);
-            if (!sdl_stream) {
-                spdlog::error("Failed to open SDL audio device stream: {}", SDL_GetError());
-                return false;
-            }
-
-            if (!SDL_ResumeAudioStreamDevice(sdl_stream)) {
-                spdlog::error("Failed to start SDL audio stream: {}", SDL_GetError());
-                SDL_DestroyAudioStream(sdl_stream);
-                sdl_stream = nullptr;
-                return false;
-            }
-
-            is_ready = true;
-
-            SDL_AudioSpec actual_spec{};
-            int actual_frames = 0;
-            SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(sdl_stream), &actual_spec, &actual_frames);
-
-            spdlog::info("Audio Device initialized successfully");
-            spdlog::info("    > Backend:       SDL3 | {}", SDL_GetCurrentAudioDriver());
-            spdlog::info("    > Format:        Float32");
-            spdlog::info("    > Channels:      {} (requested 2)", actual_spec.channels);
-            spdlog::info("    > Sample rate:   {} Hz (requested {} Hz)", actual_spec.freq, (int)target_sample_rate);
-            spdlog::info("    > Buffer size:   {} frames (device-reported)", actual_frames);
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+        switch (audio_config.device_type) {
+            case 1: return init_rtaudio_device(RtAudio::LINUX_ALSA,     "ALSA");
+            case 2: return init_rtaudio_device(RtAudio::LINUX_PULSE,    "PulseAudio");
+            case 3: return init_rtaudio_device(RtAudio::UNIX_JACK,      "JACK");
+            case 4: return init_rtaudio_device(RtAudio::LINUX_OSS,      "OSS");
+            case 5: return init_rtaudio_device(RtAudio::MACOSX_CORE,    "CoreAudio");
+            case 6: return init_rtaudio_device(RtAudio::WINDOWS_DS,     "DirectSound");
+            case 7: return init_rtaudio_device(RtAudio::WINDOWS_WASAPI, "WASAPI");
+            case 8: return init_rtaudio_device(RtAudio::WINDOWS_ASIO,   "ASIO");
+            default: break;
         }
-
-        return is_ready;
+#endif
+#ifdef _WIN32
+        switch (audio_config.device_type) {
+            case 9:  return init_portaudio_device(paWDMKS, "WDM-KS");
+            case 10: return init_portaudio_device(paMME,   "MME");
+            default: break;
+        }
+#endif
+        return init_sdl3_device();
     } catch (const std::exception& e) {
         spdlog::error("Failed to initialize audio device: {}", e.what());
         return false;
@@ -513,19 +580,24 @@ void AudioEngine::close_audio_device() {
             SDL_DestroyAudioStream(sdl_stream); // also closes the underlying device
             sdl_stream = nullptr;
         }
-#ifdef _WIN32
-        wdmks_exclusive::shutdown(); // idempotent no-op if not running
-#endif
         if (sdl_audio_subsystem_initialized) {
             SDL_QuitSubSystem(SDL_INIT_AUDIO);
             sdl_audio_subsystem_initialized = false;
         }
-#ifdef _WIN32
+#if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
         if (rt_audio != nullptr) {
             if (rt_audio->isStreamRunning()) rt_audio->stopStream();
             if (rt_audio->isStreamOpen()) rt_audio->closeStream();
             delete rt_audio;
             rt_audio = nullptr;
+        }
+#endif
+#ifdef _WIN32
+        if (pa_stream != nullptr) {
+            Pa_StopStream(pa_stream);
+            Pa_CloseStream(pa_stream);
+            pa_stream = nullptr;
+            Pa_Terminate();
         }
 #endif
         is_ready = false;

@@ -141,21 +141,7 @@ if(NOT ANDROID AND NOT EMSCRIPTEN)
 endif()
 
 # libsndfile
-if(WIN32)
-  message(STATUS "Using local libsndfile on Windows")
-  set(SNDFILE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/src/libs/audio")
-  set(SNDFILE_LIBRARY "${CMAKE_SOURCE_DIR}/src/libs/audio/libsndfile.a")
-
-  if(NOT EXISTS ${SNDFILE_LIBRARY})
-    message(FATAL_ERROR "libsndfile not found: ${SNDFILE_LIBRARY}")
-  endif()
-
-  add_library(sndfile STATIC IMPORTED)
-  set_target_properties(sndfile PROPERTIES
-          IMPORTED_LOCATION ${SNDFILE_LIBRARY}
-          INTERFACE_INCLUDE_DIRECTORIES ${SNDFILE_INCLUDE_DIR}
-      )
-elseif(ANDROID OR EMSCRIPTEN)
+if(ANDROID OR EMSCRIPTEN OR WIN32)
   message(STATUS "Fetching libogg + libvorbis for ${CMAKE_SYSTEM_NAME} (needed by libsndfile)")
   FetchContent_Declare(
       ogg
@@ -257,21 +243,7 @@ else()
 endif()
 
 # libsamplerate
-if(WIN32)
-  message(STATUS "Using local libsamplerate on Windows")
-  set(SAMPLERATE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/src/libs/audio")
-  set(SAMPLERATE_LIBRARY "${CMAKE_SOURCE_DIR}/src/libs/audio/libsamplerate.a")
-
-  if(NOT EXISTS ${SAMPLERATE_LIBRARY})
-    message(FATAL_ERROR "libsamplerate not found: ${SAMPLERATE_LIBRARY}")
-  endif()
-
-  add_library(samplerate STATIC IMPORTED)
-  set_target_properties(samplerate PROPERTIES
-          IMPORTED_LOCATION ${SAMPLERATE_LIBRARY}
-          INTERFACE_INCLUDE_DIRECTORIES ${SAMPLERATE_INCLUDE_DIR}
-      )
-elseif(ANDROID OR EMSCRIPTEN)
+if(ANDROID OR EMSCRIPTEN)
   message(STATUS "Fetching libsamplerate from source (${CMAKE_SYSTEM_NAME})")
   set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
   set(LIBSAMPLERATE_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -419,6 +391,19 @@ else()
     set(RTAUDIO_API_WASAPI ON CACHE BOOL "" FORCE)
     set(RTAUDIO_API_DS ON CACHE BOOL "" FORCE)
     set(RTAUDIO_API_ASIO ON CACHE BOOL "" FORCE)
+  elseif(UNIX AND NOT APPLE)
+    # ALSA/PulseAudio/JACK are auto-detected by RtAudio's own CMakeLists;
+    # OSS defaults off outside BSD, so force it on explicitly for Linux --
+    # but only where the OSS4 ioctls RtAudio needs are actually present,
+    # since many modern distros ship a trimmed ALSA-compat soundcard.h.
+    include(CheckSymbolExists)
+    check_symbol_exists(SNDCTL_DSP_HALT "sys/soundcard.h" HAVE_OSS4_HEADERS)
+    if(HAVE_OSS4_HEADERS)
+      set(RTAUDIO_API_OSS ON CACHE BOOL "" FORCE)
+    else()
+      set(RTAUDIO_API_OSS OFF CACHE BOOL "" FORCE)
+      message(STATUS "OSS4 headers not found (sys/soundcard.h missing SNDCTL_DSP_HALT) -- RtAudio OSS backend disabled")
+    endif()
   endif()
   FetchContent_Declare(
     rtaudio
@@ -427,4 +412,28 @@ else()
     GIT_SHALLOW TRUE
   )
   FetchContent_MakeAvailable(rtaudio)
+endif()
+
+# PortAudio (Windows only -- WDM-KS / MME backends; the other Windows APIs
+# -- DirectSound/ASIO/WASAPI -- are handled by RtAudio above)
+if(WIN32)
+  message(STATUS "Fetching PortAudio from source (WMME + WDM-KS only)")
+  set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+  set(PA_BUILD_SHARED OFF CACHE BOOL "" FORCE)
+  set(PA_BUILD_STATIC ON CACHE BOOL "" FORCE)
+  set(PA_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+  set(PA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+  set(PA_USE_WMME ON CACHE BOOL "" FORCE)
+  set(PA_USE_WDMKS ON CACHE BOOL "" FORCE)
+  set(PA_USE_DS OFF CACHE BOOL "" FORCE)
+  set(PA_USE_WASAPI OFF CACHE BOOL "" FORCE)
+  set(PA_USE_ASIO OFF CACHE BOOL "" FORCE)
+  FetchContent_Declare(
+    portaudio
+    GIT_REPOSITORY https://github.com/PortAudio/portaudio.git
+    GIT_TAG b0fe9de7ec86ebe5a26086f1d662ab74d7ebfae4
+  )
+  FetchContent_MakeAvailable(portaudio)
+else()
+  add_library(portaudio INTERFACE IMPORTED)
 endif()
