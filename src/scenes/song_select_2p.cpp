@@ -1,4 +1,5 @@
 #include "song_select_2p.h"
+#include "../libs/input.h"
 
 void SongSelect2PScreen::on_screen_start() {
     SongSelectScreen::on_screen_start();
@@ -109,7 +110,7 @@ std::optional<Screens> SongSelect2PScreen::update() {
         }
     }
 
-    if (ray::IsKeyPressed(global_data.config->keys.back_key)) {
+    if (check_key_pressed(global_data.config->keys.back_key)) {
         return on_screen_end(Screens::ENTRY);
     }
 

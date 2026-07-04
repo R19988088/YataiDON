@@ -153,7 +153,7 @@ std::optional<Screens> SongSelectScreen::update() {
         }
     }
 
-    if (ray::IsKeyPressed(global_data.config->keys.back_key) && global_data.config->general.song_limit <= 0) {
+    if (check_key_pressed(global_data.config->keys.back_key) && global_data.config->general.song_limit <= 0) {
         return on_screen_end(Screens::ENTRY);
     }
 

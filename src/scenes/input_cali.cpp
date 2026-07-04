@@ -26,7 +26,7 @@ Screens InputCaliScreen::on_screen_end(Screens next_screen) {
 }
 
 std::optional<Screens> InputCaliScreen::update() {
-    if (ray::IsKeyPressed(global_data.config->keys.back_key)) {
+    if (check_key_pressed(global_data.config->keys.back_key)) {
         return on_screen_end(Screens::SETTINGS);
     }
 

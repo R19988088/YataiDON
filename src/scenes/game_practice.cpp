@@ -136,7 +136,7 @@ std::optional<Screens> PracticeGameScreen::global_keys_practice() {
         return std::nullopt;
     }
 
-    if (ray::IsKeyPressed(global_data.config->keys.back_key)) {
+    if (check_key_pressed(global_data.config->keys.back_key)) {
         if (song_music.has_value()) {
             audio.stop_sound(song_music.value());
         }

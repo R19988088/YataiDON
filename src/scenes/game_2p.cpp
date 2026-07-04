@@ -1,4 +1,5 @@
 #include "game_2p.h"
+#include "../libs/input.h"
 
 void Game2PScreen::on_screen_start() {
     GameScreen::on_screen_start();
@@ -100,7 +101,7 @@ std::optional<Screens> Game2PScreen::update() {
         audio.play_sound("restart", VolumePreset::SOUND);
         song_started = false;
     }
-    if (ray::IsKeyPressed(global_data.config->keys.back_key)) {
+    if (check_key_pressed(global_data.config->keys.back_key)) {
         if (song_music.has_value()) audio.stop_sound(song_music.value());
         return on_screen_end(Screens::SONG_SELECT_2P);
     }
