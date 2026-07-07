@@ -42,25 +42,29 @@ android {
         }
     }
 
-    // Copy shader/es/ from repo root into APK assets as shader/es/
+    // Copy runtime assets from repo root into the APK.
+    def generatedAssetsDir = layout.buildDirectory.dir('generated/yataidon_assets')
+    def configSrcFile = rootProject.file('../config.toml')
     def shaderSrcDir = rootProject.file('../shader/es')
-    def shaderOutDir = layout.buildDirectory.dir('generated/shader_assets/shader/es')
 
-    task copyShaderAssets(type: Copy) {
-        from shaderSrcDir
-        into shaderOutDir
+    task copyYataiDONAssets(type: Copy) {
+        into generatedAssetsDir
+        from(configSrcFile)
+        from(shaderSrcDir) {
+            into 'shader/es'
+        }
     }
 
     sourceSets {
         main {
             assets.srcDirs = [
                 'src/main/assets',
-                layout.buildDirectory.dir('generated/shader_assets').get()
+                generatedAssetsDir.get()
             ]
         }
     }
 
-    preBuild.dependsOn copyShaderAssets
+    preBuild.dependsOn copyYataiDONAssets
 
     lint {
         abortOnError false

@@ -196,7 +196,7 @@ Config get_config() {
                                 std::string(err.what()));
     }
 
-    Config config;
+    Config config{};
 
     // Parse general config
     if (auto general = config_file["general"].as_table()) {
@@ -208,7 +208,7 @@ Config get_config() {
         config.general.song_timer = (*general)["song_timer"].value_or(false);
         config.general.judge_counter = (*general)["judge_counter"].value_or(false);
         config.general.nijiiro_notes = (*general)["nijiiro_notes"].value_or(false);
-        config.general.log_level = (*general)["log_level"].value_or(2);
+        config.general.log_level = (*general)["log_level"].value_or("info");
         config.general.fake_online = (*general)["fake_online"].value_or(false);
         config.general.practice_mode_bar_delay = (*general)["practice_mode_bar_delay"].value_or(0);
         config.general.score_method = (*general)["score_method"].value_or("standard");

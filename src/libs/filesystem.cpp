@@ -1,9 +1,13 @@
 #include "filesystem.h"
 #include "miniz/miniz.h"
+#include <array>
 #include <fstream>
 #include <spdlog/spdlog.h>
 #include <unistd.h>
 
+#ifdef __ANDROID__
+    #include <SDL3/SDL.h>
+#endif
 #ifdef _WIN32
     #include <windows.h>
 #endif
@@ -11,13 +15,107 @@
     #include <mach-o/dyld.h>
 #endif
 
+#ifdef __ANDROID__
+namespace {
+fs::path get_android_pref_path() {
+    char* pref_path = SDL_GetPrefPath("YataiDON", "YataiDON");
+    if (!pref_path) {
+        spdlog::warn("SDL_GetPrefPath failed: {}", SDL_GetError());
+        return {};
+    }
+
+    fs::path path(pref_path);
+    SDL_free(pref_path);
+    return path;
+}
+
+bool switch_to_writable_directory(const fs::path& dir) {
+    std::error_code ec;
+    fs::create_directories(dir, ec);
+    if (ec) {
+        spdlog::warn("Could not create {}: {}", dir.string(), ec.message());
+        return false;
+    }
+
+    fs::current_path(dir, ec);
+    if (ec) {
+        spdlog::warn("Could not use {} as working directory: {}", dir.string(), ec.message());
+        return false;
+    }
+
+    fs::path write_probe = dir / ".yataidon-write-test";
+    {
+        std::ofstream probe(write_probe, std::ios::binary | std::ios::trunc);
+        if (!probe) {
+            spdlog::warn("Working directory is not writable: {}", dir.string());
+            return false;
+        }
+        probe << "ok";
+    }
+    fs::remove(write_probe, ec);
+
+    spdlog::info("Working directory set to: {}", dir.string());
+    return true;
+}
+
+bool copy_android_asset_to_file(const char* asset_path, const fs::path& destination) {
+    SDL_IOStream* input = SDL_IOFromFile(asset_path, "rb");
+    if (!input) {
+        spdlog::warn("Could not open Android asset {}: {}", asset_path, SDL_GetError());
+        return false;
+    }
+
+    std::ofstream output(destination, std::ios::binary | std::ios::trunc);
+    if (!output) {
+        spdlog::warn("Could not create {} from Android asset", destination.string());
+        SDL_CloseIO(input);
+        return false;
+    }
+
+    std::array<char, 16 * 1024> buffer{};
+    size_t bytes_read = 0;
+    while ((bytes_read = SDL_ReadIO(input, buffer.data(), buffer.size())) > 0) {
+        output.write(buffer.data(), static_cast<std::streamsize>(bytes_read));
+        if (!output) {
+            spdlog::warn("Could not write {}", destination.string());
+            SDL_CloseIO(input);
+            return false;
+        }
+    }
+
+    SDL_CloseIO(input);
+    return true;
+}
+
+void ensure_android_default_config() {
+    std::error_code ec;
+    if (fs::exists("dev-config.toml", ec) || fs::exists("config.toml", ec))
+        return;
+
+    if (copy_android_asset_to_file("config.toml", "config.toml")) {
+        spdlog::info("Created default config.toml");
+    } else {
+        spdlog::error("config.toml is missing and the bundled default could not be copied");
+    }
+}
+}
+#endif
+
 void set_working_directory_to_executable() {
 #ifdef __ANDROID__
-    std::filesystem::path exe_dir("/sdcard/YataiDON");
-    std::error_code ec;
-    std::filesystem::create_directories(exe_dir, ec);
-    std::filesystem::current_path(exe_dir);
-    spdlog::info("Working directory set to: {}", exe_dir.string());
+    std::vector<fs::path> candidates = { fs::path("/sdcard/YataiDON") };
+    fs::path pref_path = get_android_pref_path();
+    if (!pref_path.empty())
+        candidates.push_back(pref_path);
+
+    for (const fs::path& candidate : candidates) {
+        if (switch_to_writable_directory(candidate)) {
+            ensure_android_default_config();
+            return;
+        }
+    }
+
+    spdlog::error("Failed to find a writable Android working directory");
 #elif __EMSCRIPTEN__
     spdlog::info("Emscripten: using virtual FS root as working directory");
 #elif _WIN32
