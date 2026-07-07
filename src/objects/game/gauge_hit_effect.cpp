@@ -19,8 +19,8 @@ GaugeHitEffect::GaugeHitEffect(NoteType note_type, bool is_big, bool is_2p)
 
     width = tex.textures[GAUGE::HIT_EFFECT]->width;
 
-    dest_width = width * tex.screen_scale;
-    dest_height = width * tex.screen_scale;
+    dest_width = width;
+    dest_height = width;
     origin = {width/2, width/2};
     rotation_angle = 0;
     x2_pos = -width;

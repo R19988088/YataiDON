@@ -251,6 +251,9 @@ void TextureWrapper::read_tex_obj_data(const Value& tex_mapping, TextureObject* 
                 tex_obj->y2[i] = static_cast<int>(crops[0].height * scale);
             }
         }
+
+        if (!tex_obj->x2.empty()) tex_obj->width = tex_obj->x2[0];
+        if (!tex_obj->y2.empty()) tex_obj->height = tex_obj->y2[0];
     } else if (tex_mapping.IsObject()) {
         if (tex_mapping.HasMember("crop") && tex_mapping["crop"].IsArray()) {
             std::vector<ray::Rectangle> crops;
@@ -283,6 +286,9 @@ void TextureWrapper::read_tex_obj_data(const Value& tex_mapping, TextureObject* 
                 framed->textures = reordered;
             }
         }
+
+        if (!tex_obj->x2.empty()) tex_obj->width = tex_obj->x2[0];
+        if (!tex_obj->y2.empty()) tex_obj->height = tex_obj->y2[0];
     }
 }
 
@@ -398,7 +404,7 @@ void TextureWrapper::load_folder(const std::string& screen_name, const std::stri
     if (parent_graphics_path != graphics_path) {
         load_from_path(parent_graphics_path / screen_name / subset, screen_scale);
     }
-    load_from_path(graphics_path / screen_name / subset, 1.0f);
+    load_from_path(graphics_path / screen_name / subset, screen_scale);
 
     if (loaded_count == 0) {
         spdlog::error("No textures loaded for {}/{}", screen_name, subset);
@@ -475,6 +481,8 @@ void TextureWrapper::draw_texture(uint32_t id, const DrawTextureParams& params) 
     if (it == textures.end()) return;
 
     TextureObject* tex_obj = it->second.get();
+    const ray::Texture2D* frame_tex = tex_obj->frame_texture(params.frame);
+    if (!frame_tex) return;
 
     const float mirror_x = (params.mirror == Mirror::HORIZONTAL) ? -1.0f : 1.0f;
     const float mirror_y = (params.mirror == Mirror::VERTICAL) ? -1.0f : 1.0f;
@@ -487,36 +495,33 @@ void TextureWrapper::draw_texture(uint32_t id, const DrawTextureParams& params) 
     } else if (tex_obj->crop_data.has_value()) {
         try {
             source_rect = tex_obj->crop_data->at(params.frame);
-            source_rect.height = static_cast<float>(tex_obj->height) * mirror_y;
+            source_rect.width *= mirror_x;
+            source_rect.height *= mirror_y;
         } catch (const std::out_of_range& e) {
             spdlog::error("Frame index out of range for texture {}", tex_obj->name);
             spdlog::error("Frame index: {}, Number of frames: {}", params.frame, tex_obj->crop_data->size());
             throw;
         }
     } else {
-        const float width = static_cast<float>(tex_obj->width);
-        const float height = static_cast<float>(tex_obj->height);
+        const float width = static_cast<float>(frame_tex->width);
+        const float height = static_cast<float>(frame_tex->height);
         source_rect = ray::Rectangle{0, 0, width * mirror_x, height * mirror_y};
     }
 
     // Calculate destination rectangle with reduced redundant calculations
     const float base_x = tex_obj->x[params.index];
     const float base_y = tex_obj->y[params.index];
-    const float width = static_cast<float>(tex_obj->width);
-    const float height = static_cast<float>(tex_obj->height);
 
     ray::Rectangle dest_rect;
     if (params.center) {
-        const float half_width = width * 0.5f;
-        const float half_height = height * 0.5f;
-        const float scaled_half_width = (width * params.scale) * 0.5f;
-        const float scaled_half_height = (height * params.scale) * 0.5f;
+        const float dest_width = tex_obj->x2[params.index] * params.scale + params.x2;
+        const float dest_height = tex_obj->y2[params.index] * params.scale + params.y2;
 
         dest_rect = ray::Rectangle{
-            base_x + draw_offset_x + half_width - scaled_half_width + params.x,
-            base_y + draw_offset_y + half_height - scaled_half_height + params.y,
-            tex_obj->x2[params.index] * params.scale + params.x2,
-            tex_obj->y2[params.index] * params.scale + params.y2
+            base_x + draw_offset_x + (tex_obj->x2[params.index] - dest_width) * 0.5f + params.x,
+            base_y + draw_offset_y + (tex_obj->y2[params.index] - dest_height) * 0.5f + params.y,
+            dest_width,
+            dest_height
         };
     } else {
         dest_rect = ray::Rectangle{
@@ -527,11 +532,8 @@ void TextureWrapper::draw_texture(uint32_t id, const DrawTextureParams& params) 
         };
     }
 
-    const ray::Texture2D* frame_tex = tex_obj->frame_texture(params.frame);
-    if (frame_tex) {
-        DrawTexturePro(*frame_tex, source_rect, dest_rect,
-                      params.origin, params.rotation, final_color);
-    }
+    DrawTexturePro(*frame_tex, source_rect, dest_rect,
+                  params.origin, params.rotation, final_color);
 }
 
 TextureWrapper tex;
