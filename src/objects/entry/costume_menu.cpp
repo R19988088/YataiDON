@@ -79,6 +79,13 @@ void CostumeMenu::update(double current_time_ms) {
     if (preview_chara) preview_chara->update(current_time_ms);
 }
 
+void CostumeMenu::open_costume_select() {
+    selected_index = 0;
+    costume_select_mode = true;
+    load_costume_icons();
+    refresh_preview_chara();
+}
+
 std::optional<int> CostumeMenu::get_index() {
     if (!costume_select_mode) return std::nullopt;
     return costume_icon_index;

@@ -19,6 +19,7 @@ public:
     CostumeMenu(PlayerNum player_num);
     ~CostumeMenu();
     void update(double current_time_ms);
+    void open_costume_select();
     void handle_input();
     void draw(float x = 0.0f, float y = 0.0f);
     std::optional<int> get_index();

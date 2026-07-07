@@ -33,6 +33,21 @@ void EntryScreen::on_screen_start() {
     players.clear();
     players.resize(2);
 
+    if (global_data.open_entry_costume) {
+        global_data.open_entry_costume = false;
+        global_data.player_num = PlayerNum::P1;
+        global_data.first_login_player = PlayerNum::P1;
+        side = 0;
+        players[0] = std::make_unique<EntryPlayer>(PlayerNum::P1, side, box_manager.get());
+        players[0]->start_animations();
+        players[0]->open_costume_menu();
+        if (players[0]->costume_menu.has_value()) {
+            players[0]->costume_menu->open_costume_select();
+        }
+        state = EntryState::SELECT_COSTUME;
+        announce_played = true;
+    }
+
     audio.play_sound("bgm", VolumePreset::MUSIC);
 }
 
@@ -132,7 +147,9 @@ std::optional<Screens> EntryScreen::update() {
     double current_time = get_current_ms();
     lua_entry->update(current_time);
     box_manager->update(current_time, is_2p);
-    timer->update(current_time);
+    if (state != EntryState::SELECT_COSTUME) {
+        timer->update(current_time);
+    }
     nameplate.update(current_time);
     chara->update(current_time);
     for (auto& player : players) {
@@ -150,6 +167,10 @@ std::optional<Screens> EntryScreen::update() {
         bool any_open = false;
         for (auto& player : players) {
             if (player && player->costume_menu.has_value()) { any_open = true; break; }
+        }
+        if (!any_open && global_data.return_to_settings_after_costume) {
+            global_data.return_to_settings_after_costume = false;
+            return on_screen_end(Screens::SETTINGS);
         }
         if (!any_open) state = EntryState::SELECT_MODE;
     }

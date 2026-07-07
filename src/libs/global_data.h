@@ -145,6 +145,8 @@ struct GlobalData {
     PlayerNum player_num = PlayerNum::P1;
     PlayerNum first_login_player = PlayerNum::P1;
     int input_locked = 0;
+    bool open_entry_costume = false;
+    bool return_to_settings_after_costume = false;
     std::vector<SessionData> session_data = std::vector<SessionData>(3);
 
     GlobalData() {

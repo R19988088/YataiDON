@@ -78,6 +78,7 @@ SettingsBox::SettingsBox(const std::string& name,
     , is_selected(false)
     , in_box(false)
     , option_index(0)
+    , wrap_bottom(WRAP_BOTTOM)
 {
     move_anim        = tex.get_animation(0, true);
     blue_arrow_fade  = (FadeAnimation*) tex.get_animation(1, true);
@@ -102,14 +103,18 @@ void SettingsBox::set_y(float new_y) {
     target_position = std::numeric_limits<float>::infinity();
 }
 
+void SettingsBox::set_wrap_bottom(float new_wrap_bottom) {
+    wrap_bottom = new_wrap_bottom;
+}
+
 bool SettingsBox::move_left() {
     if (y != target_position && !std::isinf(target_position)) return false;
     move_anim->start();
     direction      = 1;
     start_position = y;
     target_position = y + BOX_STEP * direction;
-    if (target_position >= WRAP_BOTTOM) {
-        target_position = WRAP_TOP + (target_position - WRAP_BOTTOM);
+    if (target_position >= wrap_bottom) {
+        target_position = WRAP_TOP + (target_position - wrap_bottom);
     }
     return true;
 }
@@ -121,7 +126,7 @@ void SettingsBox::move_right() {
     start_position = y;
     target_position = y + BOX_STEP * direction;
     if (target_position < WRAP_TOP) {
-        target_position = WRAP_BOTTOM + (target_position - WRAP_TOP);
+        target_position = wrap_bottom + (target_position - WRAP_TOP);
     }
 }
 

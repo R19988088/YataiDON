@@ -528,6 +528,10 @@ ScreenOptionBox::ScreenOptionBox(const std::string& name,
 {}
 
 void ScreenOptionBox::confirm() {
+    if (target_screen == Screens::ENTRY) {
+        global_data.open_entry_costume = true;
+        global_data.return_to_settings_after_costume = true;
+    }
     wants_screen_change = true;
     pending_screen = target_screen;
     is_highlighted = false;

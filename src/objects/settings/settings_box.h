@@ -16,6 +16,7 @@ private:
     MoveAnimation*  blue_arrow_move;
     bool            is_selected;
     int             option_index;
+    float           wrap_bottom;
     std::vector<std::unique_ptr<BaseOptionBox>> options;
 
     void draw_text() const;
@@ -31,6 +32,7 @@ public:
     ~SettingsBox();
 
     void set_y(float new_y);
+    void set_wrap_bottom(float new_wrap_bottom);
 
     // Returns false when the box should become un-selected (exit to outer navigation)
     bool move_left();
