@@ -234,7 +234,7 @@ jobs:
             find . -maxdepth 1 -name "*.dll" | sort | xargs sha256sum
           ) > release/YataiDON-Windows/checksums-windows.sha256
 
-          (cd release/YataiDON-Windows && zip -r ../YataiDON-Windows.zip .)
+          powershell.exe -NoProfile -Command "Compress-Archive -Path 'release/YataiDON-Windows/*' -DestinationPath 'release/YataiDON-Windows.zip' -Force"
 
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
