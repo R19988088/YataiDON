@@ -43,6 +43,7 @@ jobs:
             cmake \
             ninja-build \
             pkg-config \
+            zip \
             patchelf \
             libx11-dev \
             libxrandr-dev \
@@ -136,11 +137,13 @@ jobs:
             [ -d lib ] && find lib -type f | sort | xargs sha256sum || true
           ) > release/YataiDON-Linux/checksums-linux.sha256
 
+          (cd release/YataiDON-Linux && zip -r ../YataiDON-Linux.zip .)
+
       - name: Upload Linux package
         uses: actions/upload-artifact@v4
         with:
-          name: YataiDON-Linux
-          path: release/YataiDON-Linux/
+          name: YataiDON-Linux.zip
+          path: release/YataiDON-Linux.zip
           if-no-files-found: error
 
   build-windows:
@@ -194,6 +197,7 @@ jobs:
             mingw-w64-x86_64-lua
             mingw-w64-x86_64-ffmpeg
             mingw-w64-x86_64-sdl3
+            zip
             make
 
       - name: Configure CMake
@@ -227,11 +231,13 @@ jobs:
             find . -maxdepth 1 -name "*.dll" | sort | xargs sha256sum
           ) > release/YataiDON-Windows/checksums-windows.sha256
 
+          (cd release/YataiDON-Windows && zip -r ../YataiDON-Windows.zip .)
+
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: YataiDON-Windows
-          path: release/YataiDON-Windows/
+          name: YataiDON-Windows.zip
+          path: release/YataiDON-Windows.zip
           if-no-files-found: error
 
   build-macos:
@@ -321,11 +327,18 @@ jobs:
             [ -d lib ] && find lib -type f | sort | xargs shasum -a 256 || true
           ) > release/YataiDON-macOS/checksums-macos.sha256
 
+          hdiutil create \
+            -volname YataiDON \
+            -srcfolder release/YataiDON-macOS \
+            -ov \
+            -format UDZO \
+            release/YataiDON-macOS.dmg
+
       - name: Upload macOS package
         uses: actions/upload-artifact@v4
         with:
-          name: YataiDON-macOS
-          path: release/YataiDON-macOS/
+          name: YataiDON-macOS.dmg
+          path: release/YataiDON-macOS.dmg
           if-no-files-found: error
 
   build-android:
@@ -439,15 +452,18 @@ jobs:
         run: sed -i 's/^touch_input = false/touch_input = true/' config.toml
 
       - name: Build Release APK
+        id: android_apk
         working-directory: android
         run: |
           ./gradlew assembleRelease --no-daemon
           mkdir -p android-apk
           if [ -f app/build/outputs/apk/release/app-release.apk ]; then
             cp app/build/outputs/apk/release/app-release.apk android-apk/YataiDON-Android.apk
+            echo "artifact_name=YataiDON-Android.apk" >> "$GITHUB_OUTPUT"
           elif [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
             echo "::warning::Uploading unsigned Android release APK because release signing was not configured."
             cp app/build/outputs/apk/release/app-release-unsigned.apk android-apk/YataiDON-Android-unsigned.apk
+            echo "artifact_name=YataiDON-Android-unsigned.apk" >> "$GITHUB_OUTPUT"
           else
             echo "::error::No Android release APK was produced."
             find app/build/outputs/apk -type f -maxdepth 5 || true
@@ -457,8 +473,8 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: YataiDON-Android
-          path: android/android-apk/*.apk
+          name: ${{ steps.android_apk.outputs.artifact_name }}
+          path: android/android-apk/${{ steps.android_apk.outputs.artifact_name }}
           if-no-files-found: error
 
   build-summary:
@@ -490,66 +506,17 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch'
     steps:
-      - name: Download Linux artifact
+      - name: Download package artifacts
         uses: actions/download-artifact@v4
         with:
-          name: YataiDON-Linux
-          path: linux/
-
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: YataiDON-Windows
-          path: windows/
-
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: YataiDON-macOS
-          path: macos/
-
-      - name: Download Android artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: YataiDON-Android
-          path: android-out/
+          pattern: YataiDON-*
+          path: release-assets/
+          merge-multiple: true
 
       - name: Package release assets
         run: |
-          # Full zips for manual download
-          (cd linux   && zip -r ../YataiDON-Linux.zip .)
-          (cd windows && zip -r ../YataiDON-Windows.zip .)
-          (cd macos   && zip -r ../YataiDON-macOS.zip .)
-          if [ -f android-out/YataiDON-Android.apk ]; then
-            cp android-out/YataiDON-Android.apk YataiDON-Android.apk
-          elif [ -f android-out/YataiDON-Android-unsigned.apk ]; then
-            cp android-out/YataiDON-Android-unsigned.apk YataiDON-Android-unsigned.apk
-          else
-            echo "No Android APK found in artifact"
-            exit 1
-          fi
-
-          # Metadata files
-          cp linux/checksums-linux.sha256     ./checksums-linux.sha256
-          cp windows/checksums-windows.sha256 ./checksums-windows.sha256
-          cp macos/checksums-macos.sha256     ./checksums-macos.sha256
-
-          # Linux update package: binary + updater + shader + lib
-          UPDATE_LINUX="YataiDON update.sh shader/"
-          [ -d linux/lib ] && UPDATE_LINUX="$UPDATE_LINUX lib/"
-          tar -czf update-linux.tar.gz -C linux $UPDATE_LINUX
-
-          # Windows update package: binary + updater + dlls + shader
-          UPDATE_WIN="YataiDON.exe update.ps1 update.bat shader/"
-          for dll in windows/*.dll; do
-            [ -f "$dll" ] && UPDATE_WIN="$UPDATE_WIN $(basename "$dll")"
-          done
-          tar -czf update-windows.tar.gz -C windows $UPDATE_WIN
-
-          # macOS update package: binary + updater + shader + lib
-          UPDATE_MACOS="YataiDON update.sh shader/"
-          [ -d macos/lib ] && UPDATE_MACOS="$UPDATE_MACOS lib/"
-          tar -czf update-macos.tar.gz -C macos $UPDATE_MACOS
+          find release-assets -maxdepth 1 -type f -name 'YataiDON-*' -print -exec cp {} . \;
+          sha256sum YataiDON-* > checksums-release.sha256
 
       - name: Upload Release
         uses: softprops/action-gh-release@v2
@@ -557,14 +524,9 @@ jobs:
           files: |
             YataiDON-Linux.zip
             YataiDON-Windows.zip
-            YataiDON-macOS.zip
+            YataiDON-macOS.dmg
             YataiDON-Android*.apk
-            update-linux.tar.gz
-            update-windows.tar.gz
-            update-macos.tar.gz
-            checksums-linux.sha256
-            checksums-windows.sha256
-            checksums-macos.sha256
+            checksums-release.sha256
           name: "YataiDON [Latest Release]"
           tag_name: "latest"
           make_latest: true
