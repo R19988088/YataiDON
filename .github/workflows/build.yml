@@ -400,11 +400,31 @@ jobs:
           if [ -z "$STORE_TYPE" ]; then
             STORE_TYPE="jks"
           fi
+          STORE_PASSWORD="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+          KEY_ALIAS="${{ secrets.ANDROID_KEY_ALIAS }}"
+          KEY_PASSWORD="${{ secrets.ANDROID_KEY_PASSWORD }}"
+
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/yataidon-release.jks
+
+          if [ -z "$KEY_ALIAS" ]; then
+            KEY_ALIAS="$(keytool -list -v \
+              -keystore android/yataidon-release.jks \
+              -storepass "$STORE_PASSWORD" \
+              -storetype "$STORE_TYPE" \
+              | awk -F': ' '/Alias name:/{print $2; exit}')"
+          fi
+          if [ -z "$KEY_ALIAS" ]; then
+            echo "::error::ANDROID_KEY_ALIAS is empty and no alias could be read from the release keystore."
+            exit 1
+          fi
+          if [ -z "$KEY_PASSWORD" ]; then
+            KEY_PASSWORD="$STORE_PASSWORD"
+          fi
+
           printf 'storeFile=yataidon-release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\nstoreType=%s\n' \
-            "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
-            "${{ secrets.ANDROID_KEY_ALIAS }}" \
-            "${{ secrets.ANDROID_KEY_PASSWORD }}" \
+            "$STORE_PASSWORD" \
+            "$KEY_ALIAS" \
+            "$KEY_PASSWORD" \
             "$STORE_TYPE" \
             > android/keystore.properties
 
