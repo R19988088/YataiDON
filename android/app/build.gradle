@@ -7,6 +7,10 @@ def keystoreFile = rootProject.file('keystore.properties')
 if (keystoreFile.exists()) {
     keystoreFile.withInputStream { keystoreProps.load(it) }
 }
+def hasReleaseSigning = keystoreProps['storeFile'] &&
+        keystoreProps['storePassword'] &&
+        keystoreProps['keyAlias'] &&
+        keystoreProps['keyPassword']
 
 android {
     namespace 'com.yataidon.app'
@@ -93,7 +97,7 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            signingConfig signingConfigs.release
+            signingConfig hasReleaseSigning ? signingConfigs.release : null
         }
         debug {
             jniDebuggable true

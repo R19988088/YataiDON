@@ -404,6 +404,12 @@ jobs:
           KEY_ALIAS="${{ secrets.ANDROID_KEY_ALIAS }}"
           KEY_PASSWORD="${{ secrets.ANDROID_KEY_PASSWORD }}"
 
+          if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ] || [ -z "$STORE_PASSWORD" ]; then
+            echo "::warning::Android release signing secrets are missing; building an unsigned release APK."
+            rm -f android/keystore.properties android/yataidon-release.jks
+            exit 0
+          fi
+
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/yataidon-release.jks
 
           if [ -z "$KEY_ALIAS" ]; then
@@ -414,8 +420,9 @@ jobs:
               | awk -F': ' '/Alias name:/{print $2; exit}')"
           fi
           if [ -z "$KEY_ALIAS" ]; then
-            echo "::error::ANDROID_KEY_ALIAS is empty and no alias could be read from the release keystore."
-            exit 1
+            echo "::warning::ANDROID_KEY_ALIAS is empty and no alias could be read from the release keystore; building an unsigned release APK."
+            rm -f android/keystore.properties android/yataidon-release.jks
+            exit 0
           fi
           if [ -z "$KEY_PASSWORD" ]; then
             KEY_PASSWORD="$STORE_PASSWORD"
@@ -433,13 +440,25 @@ jobs:
 
       - name: Build Release APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          mkdir -p android-apk
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            cp app/build/outputs/apk/release/app-release.apk android-apk/YataiDON-Android.apk
+          elif [ -f app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            echo "::warning::Uploading unsigned Android release APK because release signing was not configured."
+            cp app/build/outputs/apk/release/app-release-unsigned.apk android-apk/YataiDON-Android-unsigned.apk
+          else
+            echo "::error::No Android release APK was produced."
+            find app/build/outputs/apk -type f -maxdepth 5 || true
+            exit 1
+          fi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: YataiDON-Android
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: android/android-apk/*.apk
           if-no-files-found: error
 
   build-summary:
@@ -501,7 +520,14 @@ jobs:
           (cd linux   && zip -r ../YataiDON-Linux.zip .)
           (cd windows && zip -r ../YataiDON-Windows.zip .)
           (cd macos   && zip -r ../YataiDON-macOS.zip .)
-          cp android-out/app-release.apk YataiDON-Android.apk
+          if [ -f android-out/YataiDON-Android.apk ]; then
+            cp android-out/YataiDON-Android.apk YataiDON-Android.apk
+          elif [ -f android-out/YataiDON-Android-unsigned.apk ]; then
+            cp android-out/YataiDON-Android-unsigned.apk YataiDON-Android-unsigned.apk
+          else
+            echo "No Android APK found in artifact"
+            exit 1
+          fi
 
           # Metadata files
           cp linux/checksums-linux.sha256     ./checksums-linux.sha256
@@ -532,7 +558,7 @@ jobs:
             YataiDON-Linux.zip
             YataiDON-Windows.zip
             YataiDON-macOS.zip
-            YataiDON-Android.apk
+            YataiDON-Android*.apk
             update-linux.tar.gz
             update-windows.tar.gz
             update-macos.tar.gz
