@@ -17,6 +17,7 @@ public:
     bool select_box();
 
     std::optional<Screens> pending_screen_change() const;
+    bool is_capturing_input() const;
 
     void move_left();
     void move_right();

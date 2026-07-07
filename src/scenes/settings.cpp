@@ -108,9 +108,15 @@ void add_skin_settings_category(rapidjson::Document& tmpl) {
     move_option(tmpl, "general", "nijiiro_notes", options, allocator);
     move_option(tmpl, "general", "fake_online", options, allocator);
     add_screen_option(options,
+                      "entry_costume",
+                      "3D Don",
+                      "Choose the 3D Don costume from the entry screen.",
+                      "entry",
+                      allocator);
+    add_screen_option(options,
                       "skin_viewer",
                       "Skin Viewer",
-                      "Open the skin viewer.",
+                      "Inspect skin graphics and texture data.",
                       "skin_viewer",
                       allocator);
 
@@ -165,13 +171,16 @@ std::optional<Screens> SettingsScreen::handle_input() {
     if (ray::IsKeyPressed(ray::KEY_F2)) {
         return on_screen_end(Screens::SKIN_VIEWER);
     }
-    if (is_l_kat_pressed()) {
+    if (box_manager->is_capturing_input()) {
+        return std::nullopt;
+    }
+    if (is_l_kat_pressed() || check_key_pressed(ray::KEY_LEFT) || check_key_pressed(ray::KEY_UP)) {
         audio.play_sound("kat", VolumePreset::SOUND);
         box_manager->move_left();
-    } else if (is_r_kat_pressed()) {
+    } else if (is_r_kat_pressed() || check_key_pressed(ray::KEY_RIGHT) || check_key_pressed(ray::KEY_DOWN)) {
         audio.play_sound("kat", VolumePreset::SOUND);
         box_manager->move_right();
-    } else if (is_l_don_pressed() || is_r_don_pressed()) {
+    } else if (is_l_don_pressed() || is_r_don_pressed() || check_key_pressed(ray::KEY_ENTER)) {
         audio.play_sound("don", VolumePreset::SOUND);
         bool result = box_manager->select_box();
         if (result) {

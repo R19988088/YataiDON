@@ -20,6 +20,7 @@ public:
 
     virtual void confirm() {}
     virtual bool needs_text_input() const { return false; }
+    virtual bool captures_keyboard_input() const { return false; }
 
     virtual void update(double /*current_time*/) {}
     virtual void move_left()  {}
@@ -78,6 +79,7 @@ public:
 
     void confirm()    override;
     bool needs_text_input() const override;
+    bool captures_keyboard_input() const override;
     void update(double current_time) override;
     void move_left()  override;
     void move_right() override;
@@ -95,6 +97,7 @@ public:
                      const std::string& path);
 
     void confirm()    override;
+    bool captures_keyboard_input() const override { return true; }
     void update(double current_time) override;
     void draw()       override;
 };
@@ -110,6 +113,7 @@ public:
                                 const std::string& path);
 
     void confirm()    override;
+    bool captures_keyboard_input() const override { return true; }
     void update(double current_time) override;
     void draw()       override;
 };

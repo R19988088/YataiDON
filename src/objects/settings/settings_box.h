@@ -42,6 +42,8 @@ public:
     void select_option();
 
     void select();
+    bool has_options() const;
+    bool is_capturing_input() const;
 
     // Returns non-null if an option requested a screen transition
     std::optional<Screens> pending_screen_change() const;

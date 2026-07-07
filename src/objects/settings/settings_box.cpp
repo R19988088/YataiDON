@@ -31,6 +31,8 @@ std::unique_ptr<BaseOptionBox> SettingsBox::make_option_box(const rapidjson::Val
             : "";
         if (screen == "skin_viewer")
             return std::make_unique<ScreenOptionBox>(name, desc, Screens::SKIN_VIEWER);
+        if (screen == "entry")
+            return std::make_unique<ScreenOptionBox>(name, desc, Screens::ENTRY);
         throw std::runtime_error("Unknown settings screen: " + screen);
     }
     if (type == "bool") {
@@ -154,6 +156,17 @@ void SettingsBox::select_option() {
 
 void SettingsBox::select() {
     in_box = true;
+}
+
+bool SettingsBox::has_options() const {
+    return !options.empty();
+}
+
+bool SettingsBox::is_capturing_input() const {
+    return in_box
+        && !options.empty()
+        && options[option_index]->is_highlighted
+        && options[option_index]->captures_keyboard_input();
 }
 
 std::optional<Screens> SettingsBox::pending_screen_change() const {

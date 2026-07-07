@@ -11,9 +11,18 @@ SettingsBoxManager::SettingsBoxManager(const rapidjson::Document& tmpl)
 {
     std::string lang = global_data.config->general.language;
 
+    std::vector<std::pair<std::string, const rapidjson::Value*>> ordered;
     for (auto it = tmpl.MemberBegin(); it != tmpl.MemberEnd(); ++it) {
         std::string cat_name = it->name.GetString();
-        const auto& cat = it->value;
+        if (cat_name != "exit")
+            ordered.emplace_back(cat_name, &it->value);
+    }
+    auto exit_it = tmpl.FindMember("exit");
+    if (exit_it != tmpl.MemberEnd())
+        ordered.emplace_back("exit", &exit_it->value);
+
+    for (auto& [cat_name, cat_ptr] : ordered) {
+        const auto& cat = *cat_ptr;
 
         std::string label;
         if (cat.HasMember("name")) {
@@ -27,7 +36,9 @@ SettingsBoxManager::SettingsBoxManager(const rapidjson::Document& tmpl)
         rapidjson::Value empty_obj(rapidjson::kObjectType);
         if (!opts) opts = &empty_obj;
 
-        boxes.push_back(std::make_unique<SettingsBox>(cat_name, label, *opts));
+        auto box = std::make_unique<SettingsBox>(cat_name, label, *opts);
+        if (box->has_options() || cat_name == "exit")
+            boxes.push_back(std::move(box));
     }
 
     num_boxes = (int)boxes.size();
@@ -72,9 +83,17 @@ std::optional<Screens> SettingsBoxManager::pending_screen_change() const {
     return std::nullopt;
 }
 
+bool SettingsBoxManager::is_capturing_input() const {
+    if (boxes.empty()) return false;
+    return boxes[selected_box_index]->is_capturing_input();
+}
+
 bool SettingsBoxManager::select_box() {
     if (boxes[selected_box_index]->box_name == "exit") {
         return true;
+    }
+    if (!boxes[selected_box_index]->has_options()) {
+        return false;
     }
     if (box_selected) {
         boxes[selected_box_index]->select_option();

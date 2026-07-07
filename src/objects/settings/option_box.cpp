@@ -206,6 +206,10 @@ bool StrOptionBox::needs_text_input() const {
     return value_list.empty();
 }
 
+bool StrOptionBox::captures_keyboard_input() const {
+    return value_list.empty();
+}
+
 void StrOptionBox::update(double current_time) {
     flicker_fade->update(current_time);
     if (is_highlighted && value_list.empty()) {

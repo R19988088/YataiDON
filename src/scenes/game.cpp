@@ -238,7 +238,6 @@ void GameScreen::save_score(int player_id, PlayerNum player_num) {
         score.rank = Rank::_WHITE;
     }
     scores_manager.save_score(hash, session_data.selected_difficulty, player_id, score);
-    global_data.songs_played += 1;
 }
 
 void GameScreen::resync_song(double current_ms) {
@@ -268,6 +267,7 @@ void GameScreen::end_song() {
         if (!players[0]->is_auto_play()) {
             save_score(global_data.config->general.player_1_id, players[0]->player_num);
         }
+        global_data.songs_played += 1;
         for (auto& player : players) {
             player->spawn_ending_anim();
         }

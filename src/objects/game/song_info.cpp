@@ -29,10 +29,10 @@ SongNum::SongNum(int song_num) {
     std::string song_format = tex.skin_config[SC::SONG_NUM].text[global_data.config->general.language];
     size_t pos = song_format.find("{0}");
     if (pos != std::string::npos) {
-        song_format.replace(pos, 3, std::to_string(global_data.songs_played + 1));
+        song_format.replace(pos, 3, std::to_string(song_num));
     }
     ray::Color outline_color;
-    if (global_data.config->general.song_limit > 0 && global_data.config->general.song_limit == global_data.songs_played + 1) {
+    if (global_data.config->general.song_limit > 0 && global_data.config->general.song_limit == song_num) {
         outline_color = ray::RED;
     } else {
         outline_color = ray::BLACK;

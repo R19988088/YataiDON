@@ -2,6 +2,7 @@
 
 #include "../../libs/script.h"
 #include "../../libs/global_data.h"
+#include "../global/chara_3d.h"
 #include <memory>
 #include <vector>
 
@@ -30,9 +31,12 @@ private:
 
     std::vector<ray::Texture2D> costume_icons;
     std::vector<int> costume_ids;
+    std::unique_ptr<Chara3D> preview_chara;
+    int preview_costume_id = -1;
     bool icons_loaded = false;
 
     void load_costume_icons();
+    void refresh_preview_chara();
 
     static constexpr int NUM_ITEMS = 7;
     static constexpr std::array<uint32_t, NUM_ITEMS> ITEMS = {
