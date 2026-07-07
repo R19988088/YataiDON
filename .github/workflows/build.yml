@@ -396,11 +396,16 @@ jobs:
 
       - name: Decode keystore
         run: |
+          STORE_TYPE="${{ secrets.ANDROID_KEYSTORE_TYPE }}"
+          if [ -z "$STORE_TYPE" ]; then
+            STORE_TYPE="jks"
+          fi
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/yataidon-release.jks
-          printf 'storeFile=yataidon-release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+          printf 'storeFile=yataidon-release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\nstoreType=%s\n' \
             "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
             "${{ secrets.ANDROID_KEY_ALIAS }}" \
             "${{ secrets.ANDROID_KEY_PASSWORD }}" \
+            "$STORE_TYPE" \
             > android/keystore.properties
 
       - name: Patch config for Android
