@@ -391,14 +391,44 @@ jobs:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
           echo "cmake.dir=$ANDROID_SDK_ROOT/cmake/3.22.1" >> android/local.properties
 
-      - name: Decode keystore
+      - name: Prepare Android keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/yataidon-release.jks
-          printf 'storeFile=yataidon-release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
-            "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
-            "${{ secrets.ANDROID_KEY_ALIAS }}" \
-            "${{ secrets.ANDROID_KEY_PASSWORD }}" \
-            > android/keystore.properties
+          set -euo pipefail
+
+          use_secret_keystore=false
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ] && \
+             [ -n "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" ] && \
+             [ -n "${{ secrets.ANDROID_KEY_ALIAS }}" ] && \
+             [ -n "${{ secrets.ANDROID_KEY_PASSWORD }}" ]; then
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/yataidon-release.jks
+            if keytool -list \
+                -keystore android/yataidon-release.jks \
+                -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+                -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
+              printf 'storeFile=yataidon-release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+                "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+                "${{ secrets.ANDROID_KEY_ALIAS }}" \
+                "${{ secrets.ANDROID_KEY_PASSWORD }}" \
+                > android/keystore.properties
+              use_secret_keystore=true
+            fi
+          fi
+
+          if [ "$use_secret_keystore" != "true" ]; then
+            echo "::warning::Android release keystore secret is missing or invalid; generating a temporary CI keystore."
+            rm -f android/yataidon-release.jks
+            keytool -genkeypair -v \
+              -keystore android/yataidon-release.jks \
+              -storepass yataidon-ci \
+              -alias yataidon-ci \
+              -keypass yataidon-ci \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=YataiDON CI,O=YataiDON,C=US"
+            printf 'storeFile=yataidon-release.jks\nstorePassword=yataidon-ci\nkeyAlias=yataidon-ci\nkeyPassword=yataidon-ci\n' \
+              > android/keystore.properties
+          fi
 
       - name: Patch config for Android
         run: sed -i 's/^touch_input = false/touch_input = true/' config.toml
