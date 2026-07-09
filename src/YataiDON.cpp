@@ -3,7 +3,10 @@
 #include <utility>
 #include <rlgl.h>
 #ifdef __APPLE__
-#include <Carbon/HIToolbox/TextInputSources.h>
+#include <CoreFoundation/CoreFoundation.h>
+using TISInputSourceRef = const struct __TISInputSource*;
+extern "C" TISInputSourceRef TISCopyInputSourceForLanguage(CFStringRef language);
+extern "C" OSStatus TISSelectInputSource(TISInputSourceRef inputSource);
 #endif
 #ifdef PLATFORM_ANDROID
 #include <SDL3/SDL_main.h>
