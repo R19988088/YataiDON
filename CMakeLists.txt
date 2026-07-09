@@ -106,6 +106,9 @@ if(NOT ANDROID AND NOT EMSCRIPTEN)
   target_link_libraries(${PROJECT_NAME} PRIVATE rtaudio)
 endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE portaudio)
+if(APPLE)
+  target_link_libraries(${PROJECT_NAME} PRIVATE "-framework Carbon")
+endif()
 
 include(cmake/platform.cmake)
 

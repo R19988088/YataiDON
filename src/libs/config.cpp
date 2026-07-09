@@ -320,12 +320,18 @@ Config get_config() {
         config.video.borderless = (*video)["borderless"].value_or(false);
         config.video.width = (*video)["width"].value_or(1920);
         config.video.height = (*video)["height"].value_or(1080);
+        config.video.window_width = (*video)["window_width"].value_or(config.video.width);
+        config.video.window_height = (*video)["window_height"].value_or(config.video.height);
+        config.video.window_x = (*video)["window_x"].value_or(-1);
+        config.video.window_y = (*video)["window_y"].value_or(-1);
         config.video.target_fps = (*video)["target_fps"].value_or(60);
         config.video.vsync = (*video)["vsync"].value_or(true);
     }
 
     if (config.video.width <= 0) config.video.width = 1920;
     if (config.video.height <= 0) config.video.height = 1080;
+    if (config.video.window_width <= 0) config.video.window_width = config.video.width;
+    if (config.video.window_height <= 0) config.video.window_height = config.video.height;
 
     return config;
 }
@@ -455,6 +461,10 @@ void save_config(const Config& config) {
         {"borderless", config.video.borderless},
         {"width", config.video.width},
         {"height", config.video.height},
+        {"window_width", config.video.window_width},
+        {"window_height", config.video.window_height},
+        {"window_x", config.video.window_x},
+        {"window_y", config.video.window_y},
         {"target_fps", config.video.target_fps},
         {"vsync", config.video.vsync}
     });

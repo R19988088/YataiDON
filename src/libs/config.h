@@ -84,6 +84,10 @@ struct VideoConfig {
     bool borderless;
     int width;
     int height;
+    int window_width;
+    int window_height;
+    int window_x;
+    int window_y;
     int target_fps;
     bool vsync;
 };

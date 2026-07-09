@@ -429,6 +429,7 @@ void Chara3D::draw_3d(float x, float y) {
 
 void Chara3D::draw(float x, float y) {
     if (!model_valid) return;
+    y += y_offset * tex.screen_scale;
 
     int rw = ray::GetRenderWidth();
     int rh = ray::GetRenderHeight();

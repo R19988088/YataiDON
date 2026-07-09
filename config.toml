@@ -64,6 +64,10 @@ borderless = false
 fullscreen = false
 width = 1920
 height = 1080
+window_width = 1920
+window_height = 1080
+window_x = -1
+window_y = -1
 target_fps = -1
 vsync = false
 

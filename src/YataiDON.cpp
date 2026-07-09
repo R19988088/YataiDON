@@ -1,8 +1,10 @@
 #include <iostream>
 #include <algorithm>
-#include <cmath>
 #include <utility>
 #include <rlgl.h>
+#ifdef __APPLE__
+#include <Carbon/Carbon.h>
+#endif
 #ifdef PLATFORM_ANDROID
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL.h>
@@ -170,15 +172,26 @@ static bool can_open_settings_from(Screens screen) {
         && screen != Screens::SKIN_VIEWER;
 }
 
-static std::pair<int, int> startup_window_size(int width, int height) {
+static void force_english_input_source() {
 #ifdef __APPLE__
-    constexpr int max_width = 1080;
-    if (width > max_width && height > 0) {
-        height = std::max(1, static_cast<int>(std::lround((float)height * max_width / width)));
-        width = max_width;
+    TISInputSourceRef source = TISCopyInputSourceForLanguage(CFSTR("en"));
+    if (source) {
+        TISSelectInputSource(source);
+        CFRelease(source);
     }
 #endif
-    return {width, height};
+}
+
+static void save_window_state() {
+    if (!global_data.config || global_data.config->video.fullscreen || global_data.config->video.borderless)
+        return;
+
+    global_data.config->video.window_width = ray::GetScreenWidth();
+    global_data.config->video.window_height = ray::GetScreenHeight();
+    ray::Vector2 pos = ray::GetWindowPosition();
+    global_data.config->video.window_x = static_cast<int>(pos.x);
+    global_data.config->video.window_y = static_cast<int>(pos.y);
+    save_config(*global_data.config);
 }
 
 static void run_frame() {
@@ -302,8 +315,10 @@ int main(int argc, char* argv[]) {
     SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
     SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 #endif
-    auto [window_width, window_height] = startup_window_size(tex.screen_width, tex.screen_height);
-    ray::InitWindow(window_width, window_height, "YataiDON");
+    ray::InitWindow(global_data.config->video.window_width, global_data.config->video.window_height, "YataiDON");
+    if (global_data.config->video.window_x >= 0 && global_data.config->video.window_y >= 0)
+        ray::SetWindowPosition(global_data.config->video.window_x, global_data.config->video.window_y);
+    force_english_input_source();
 
     global_tex.init(root_skin_path / "Graphics");
     global_tex.load_screen_textures("global");
@@ -385,6 +400,8 @@ int main(int argc, char* argv[]) {
     while (!ray::WindowShouldClose()) {
         run_frame();
     }
+
+    save_window_state();
 
     input_thread_running = false;
     if (input_thread.joinable()) {
