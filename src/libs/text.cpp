@@ -7,7 +7,12 @@ FontManager::FontManager() : font({}), max_font_size(100) {}
 void FontManager::init(const fs::path& font_path) {
     std::lock_guard<std::mutex> lock(font_mutex);
     base_font_path = font_path;
+#ifdef __APPLE__
+    fs::path bundled_font = fs::path("YataiDON.app") / "Contents" / "Resources" / "FZPangWaUltra-Regular.ttf";
+    zh_font_path = fs::exists(bundled_font) ? bundled_font : fs::path("FZPangWaUltra-Regular.ttf");
+#else
     zh_font_path = fs::path("FZPangWaUltra-Regular.ttf");
+#endif
     select_font_path();
     for (int i = 32; i < 127; i++)
         codepoint_cache.insert(i);

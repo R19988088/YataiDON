@@ -170,7 +170,7 @@ static bool can_open_settings_from(Screens screen) {
         && screen != Screens::SKIN_VIEWER;
 }
 
-static std::pair<int, int> startup_resolution(int width, int height) {
+static std::pair<int, int> startup_window_size(int width, int height) {
 #ifdef __APPLE__
     constexpr int max_width = 1080;
     if (width > max_width && height > 0) {
@@ -294,16 +294,16 @@ int main(int argc, char* argv[]) {
 
     fs::path root_skin_path = fs::path("Skins") / global_data.config->paths.skin;
 
-    auto [startup_width, startup_height] = startup_resolution(global_data.config->video.width, global_data.config->video.height);
-    tex.set_target_resolution(startup_width, startup_height);
-    global_tex.set_target_resolution(startup_width, startup_height);
+    tex.set_target_resolution(global_data.config->video.width, global_data.config->video.height);
+    global_tex.set_target_resolution(global_data.config->video.width, global_data.config->video.height);
     tex.init(root_skin_path / "Graphics");
 
 #ifdef PLATFORM_ANDROID
     SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
     SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 #endif
-    ray::InitWindow(tex.screen_width, tex.screen_height, "YataiDON");
+    auto [window_width, window_height] = startup_window_size(tex.screen_width, tex.screen_height);
+    ray::InitWindow(window_width, window_height, "YataiDON");
 
     global_tex.init(root_skin_path / "Graphics");
     global_tex.load_screen_textures("global");

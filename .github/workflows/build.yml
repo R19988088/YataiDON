@@ -309,13 +309,13 @@ jobs:
           APP=release/YataiDON-macOS/YataiDON.app
           mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
           cp build/bin/YataiDON "$APP/Contents/MacOS/"
-          cp -r Skins "$APP/Contents/Resources/"
-          cp -r shader "$APP/Contents/Resources/"
-          cp -r Songs "$APP/Contents/Resources/"
-          cp config.toml "$APP/Contents/Resources/"
+          cp -r Skins release/YataiDON-macOS/
+          cp -r shader release/YataiDON-macOS/
+          cp -r Songs release/YataiDON-macOS/
+          cp config.toml release/YataiDON-macOS/
           cp FZPangWaUltra-Regular.ttf "$APP/Contents/Resources/"
-          cp update.sh "$APP/Contents/Resources/"
-          chmod +x "$APP/Contents/MacOS/YataiDON" "$APP/Contents/Resources/update.sh"
+          cp update.sh release/YataiDON-macOS/
+          chmod +x "$APP/Contents/MacOS/YataiDON" release/YataiDON-macOS/update.sh
           cat > "$APP/Contents/Info.plist" <<'PLIST'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -358,8 +358,8 @@ jobs:
           (
             cd release/YataiDON-macOS
             shasum -a 256 YataiDON.app/Contents/MacOS/YataiDON
-            shasum -a 256 YataiDON.app/Contents/Resources/update.sh YataiDON.app/Contents/Resources/FZPangWaUltra-Regular.ttf
-            find YataiDON.app/Contents/Resources/shader -type f | sort | xargs shasum -a 256
+            shasum -a 256 update.sh YataiDON.app/Contents/Resources/FZPangWaUltra-Regular.ttf
+            find shader -type f | sort | xargs shasum -a 256
             find YataiDON.app/Contents/MacOS/lib -type f | sort | xargs shasum -a 256
           ) > release/YataiDON-macOS/checksums-macos.sha256
 
@@ -373,7 +373,7 @@ jobs:
       - name: Upload macOS package
         uses: actions/upload-artifact@v4
         with:
-          name: YataiDON-macOS.dmg
+          name: YataiDON-macOS
           path: release/YataiDON-macOS.dmg
           if-no-files-found: error
 
