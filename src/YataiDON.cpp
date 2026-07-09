@@ -3,7 +3,7 @@
 #include <utility>
 #include <rlgl.h>
 #ifdef __APPLE__
-#include <Carbon/Carbon.h>
+#include <HIToolbox/TextInputSources.h>
 #endif
 #ifdef PLATFORM_ANDROID
 #include <SDL3/SDL_main.h>
